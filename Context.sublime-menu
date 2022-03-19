@@ -1,0 +1,15 @@
+[
+    {
+        "caption": "Run Snippet code",
+        "command": "run_snippet",
+        "mnemonic": "R",
+        "id": "run_snippet",
+        "keys": ["f6"], 
+    },
+    {
+        "caption": "Open Result Panel",
+        "keys": ["shift+escape"], "command": "show_panel",
+        "args": {"panel": "output.exec"},
+        "context": [ { "key": "panel_visible", "operand": true } ]
+    },
+]
