@@ -189,25 +189,25 @@ if sys.version_info >= (3,8):
     )
 ```
 
->> Output:
-👉 Sublime Text Plugin Test - Python Script 👈
-    Module Name: User.TestPlugin
- Python Version: 3.8.8 (default, Mar 10 2021, 13:30:47) [MSC v.1915 64 bit (AMD64)]
-   Version Info: sys.version_info(major=3, minor=8, micro=8, releaselevel='final', serial=0)
-    Interpreter: C:\Program Files\Sublime Text 3\plugin_host-3.8.exe
-   Sublime Text: 4121
-     Below 3.9?: True
-Type of version_info: <class 'sys.version_info'>
-Is version_info type of tuple: True
-sublime_api.version()                : 4121
-sublime_api.platform()               : windows
-sublime_api.architecture()           : x64
-sublime_api.channel()                : stable
-sublime_api.executable_path()        : C:\Program Files\Sublime Text 3\sublime_text.exe
-sublime_api.packages_path()          : C:\Users\UserName\AppData\Roaming\Sublime Text 3\Packages
-sublime_api.installed_packages_path(): C:\Users\UserName\AppData\Roaming\Sublime Text 3\Installed Packages
-sublime_api.cache_path()             : C:\Users\UserName\AppData\Local\Sublime Text 3\Cache
-Byte-Code Cache  C:\Users\UserName\AppData\Local\Sublime Text 3\Cache\__pycache__
+    >> Output:
+    👉 Sublime Text Plugin Test - Python Script 👈
+        Module Name: User.TestPlugin
+     Python Version: 3.8.8 (default, Mar 10 2021, 13:30:47) [MSC v.1915 64 bit (AMD64)]
+       Version Info: sys.version_info(major=3, minor=8, micro=8, releaselevel='final', serial=0)
+        Interpreter: C:\Program Files\Sublime Text 3\plugin_host-3.8.exe
+       Sublime Text: 4121
+         Below 3.9?: True
+    Type of version_info: <class 'sys.version_info'>
+    Is version_info type of tuple: True
+    sublime_api.version()                : 4121
+    sublime_api.platform()               : windows
+    sublime_api.architecture()           : x64
+    sublime_api.channel()                : stable
+    sublime_api.executable_path()        : C:\Program Files\Sublime Text 3\sublime_text.exe
+    sublime_api.packages_path()          : C:\Users\UserName\AppData\Roaming\Sublime Text 3\Packages
+    sublime_api.installed_packages_path(): C:\Users\UserName\AppData\Roaming\Sublime Text 3\Installed Packages
+    sublime_api.cache_path()             : C:\Users\UserName\AppData\Local\Sublime Text 3\Cache
+    Byte-Code Cache  C:\Users\UserName\AppData\Local\Sublime Text 3\Cache\__pycache__
 
 因为 Python 运行时会先将脚本编译生成字节码再执行，所以开发插件时，可能因为文件经常改动导致原有的类型还存在字码文件中，但是最新的状态应该是删除掉的，这可以能导致一些难以发现的根源的问题。
 
@@ -637,98 +637,98 @@ Informations of class or instance: <module 'sublime_api' (built-in)>
 
 <class 'builtin_function_or_method'> Type of: <class 'module'>
 
-| active_window                | view_classify                             | view_settings                          |
-| architecture                 | view_clear_undo_stack                     | view_sheet_id                          |
-| buffer_add_text_listener     | view_clones                               | view_show_point                        |
-| buffer_clear_text_listener   | view_command_history                      | view_show_point_at_center              |
-| buffer_file_name             | view_context_backtrace                    | view_show_popup                        |
-| buffer_primary_view          | view_element                              | view_show_popup_table                  |
-| buffer_views                 | view_em_width                             | view_show_region                       |
-| buffers                      | view_encoding                             | view_show_region_at_center             |
-| cache_path                   | view_end_edit                             | view_size                              |
-| can_accept_input             | view_erase                                | view_split_by_newlines                 |
-| channel                      | view_erase_phantom                        | view_style                             |
-| decode_value                 | view_erase_phantoms                       | view_style_for_scope                   |
-| encode_value                 | view_erase_regions                        | view_substr                            |
-| error_message                | view_erase_status                         | view_symbol_regions                    |
-| executable_path              | view_expand_by_class                      | view_symbols                           |
-| expand_variables             | view_export_to_html                       | view_text_point                        |
-| find_resources               | view_extract_completions                  | view_text_point_utf16                  |
-| find_syntax_for_file         | view_extract_scope                        | view_text_point_utf8                   |
-| gather_plugin_profiling_data | view_extract_tokens_with_scopes           | view_text_to_layout                    |
-| get_clipboard                | view_file_name                            | view_transform_region_from             |
-| get_clipboard_async          | view_find                                 | view_unfold_region                     |
-| get_log_build_systems        | view_find_all                             | view_unfold_regions                    |
-| get_log_commands             | view_find_all_results                     | view_update_popup_content              |
-| get_log_control_tree         | view_find_all_results_with_text           | view_viewport_extents                  |
-| get_log_fps                  | view_find_all_with_contents               | view_viewport_position                 |
-| get_log_indexing             | view_find_by_class                        | view_visible_region                    |
-| get_log_input                | view_find_by_selector                     | view_window                            |
-| get_log_result_regex         | view_fold_region                          | view_window_to_layout                  |
-| get_macro                    | view_fold_regions                         | view_word_from_point                   |
-| get_syntax                   | view_folded_regions                       | view_word_from_region                  |
-| html_sheet_set_contents      | view_full_line_from_point                 | window_active_group                    |
-| incompatible_syntax_patterns | view_full_line_from_region                | window_active_panel                    |
-| installed_packages_path      | view_get_name                             | window_active_sheet                    |
-| list_syntaxes                | view_get_overwrite_status                 | window_active_sheet_in_group           |
-| load_binary_resource         | view_get_regions                          | window_active_view                     |
-| load_resource                | view_get_status                           | window_active_view_in_group            |
-| load_settings                | view_has_non_empty_selection_region       | window_automate_ui                     |
-| log_build_systems            | view_hide_popup                           | window_bring_to_front                  |
-| log_commands                 | view_indentation_level                    | window_can_accept_input                |
-| log_control_tree             | view_indented_region                      | window_close_file                      |
-| log_fps                      | view_indexed_references                   | window_create_output_panel             |
-| log_indexing                 | view_indexed_symbol_regions               | window_destroy_output_panel            |
-| log_input                    | view_indexed_symbols                      | window_extract_variables               |
-| log_message                  | view_insert                               | window_file_history                    |
-| log_result_regex             | view_is_auto_complete_visible             | window_find_open_file                  |
-| message_dialog               | view_is_dirty                             | window_find_output_panel               |
-| notify_application_commands  | view_is_folded                            | window_focus_group                     |
-| ok_cancel_dialog             | view_is_in_edit                           | window_focus_sheet                     |
-| open_dialog                  | view_is_loading                           | window_focus_view                      |
-| packages_path                | view_is_popup_visible                     | window_folders                         |
-| platform                     | view_is_primary                           | window_get_layout                      |
-| plugin_host_loaded_plugins   | view_is_read_only                         | window_get_project_data                |
-| plugin_host_ready            | view_is_scratch                           | window_get_sheet_index                 |
-| profile_syntax_definition    | view_layout_extents                       | window_get_view_index                  |
-| run_command                  | view_layout_to_text                       | window_is_dragging                     |
-| run_syntax_test              | view_layout_to_window                     | window_is_ui_element_visible           |
-| save_dialog                  | view_line_endings                         | window_lookup_references               |
-| save_settings                | view_line_from_point                      | window_lookup_references_in_open_files |
-| score_selector               | view_line_from_region                     | window_lookup_symbol                   |
-| select_folder_dialog         | view_line_height                          | window_lookup_symbol_in_open_files     |
-| set_clipboard                | view_lines                                | window_new_file                        |
-| set_timeout                  | view_match_selector                       | window_new_html_sheet                  |
-| set_timeout_async            | view_meta_info                            | window_num_groups                      |
-| settings_add_on_change       | view_preserve_auto_complete_on_focus_lost | window_open_file                       |
-| settings_clear_on_change     | view_query_phantoms                       | window_panels                          |
-| settings_erase               | view_replace                              | window_project_file_name               |
-| settings_get                 | view_reset_reference_document             | window_run_command                     |
-| settings_get_default         | view_retarget                             | window_select_sheets                   |
-| settings_has                 | view_row_col                              | window_selected_sheets                 |
-| settings_set                 | view_row_col_utf16                        | window_selected_sheets_in_group        |
-| settings_to_dict             | view_row_col_utf8                         | window_set_layout                      |
-| sheet_close                  | view_run_command                          | window_set_project_data                |
-| sheet_file_name              | view_scope_name                           | window_set_sheet_index                 |
-| sheet_group                  | view_score_selector                       | window_set_ui_element_visible          |
-| sheet_is_semi_transient      | view_selection_add_point                  | window_set_view_index                  |
-| sheet_is_transient           | view_selection_add_region                 | window_settings                        |
-| sheet_set_name               | view_selection_clear                      | window_sheets                          |
-| sheet_view                   | view_selection_contains                   | window_sheets_in_group                 |
-| sheet_window                 | view_selection_erase                      | window_show_input_panel                |
-| status_message               | view_selection_get                        | window_show_quick_panel                |
-| ui_info                      | view_selection_size                       | window_status_message                  |
-| verify_pc_signature          | view_selection_subtract_region            | window_symbol_locations                |
-| version                      | view_set_completions                      | window_system_handle                   |
-| view_add_phantom             | view_set_encoding                         | window_template_settings               |
-| view_add_regions             | view_set_line_endings                     | window_transient_sheet_in_group        |
-| view_assign_syntax           | view_set_name                             | window_transient_view_in_group         |
-| view_begin_edit              | view_set_overwrite_status                 | window_views                           |
-| view_buffer_id               | view_set_read_only                        | window_views_in_group                  |
-| view_cached_substr           | view_set_reference_document               | window_workspace_file_name             |
-| view_can_accept_input        | view_set_scratch                          | windows                                |
-| view_change_count            | view_set_status                           | yes_no_cancel_dialog                   |
-| view_change_id               | view_set_viewport_position                |                                        |
+    | active_window                | view_classify                             | view_settings                          |
+    | architecture                 | view_clear_undo_stack                     | view_sheet_id                          |
+    | buffer_add_text_listener     | view_clones                               | view_show_point                        |
+    | buffer_clear_text_listener   | view_command_history                      | view_show_point_at_center              |
+    | buffer_file_name             | view_context_backtrace                    | view_show_popup                        |
+    | buffer_primary_view          | view_element                              | view_show_popup_table                  |
+    | buffer_views                 | view_em_width                             | view_show_region                       |
+    | buffers                      | view_encoding                             | view_show_region_at_center             |
+    | cache_path                   | view_end_edit                             | view_size                              |
+    | can_accept_input             | view_erase                                | view_split_by_newlines                 |
+    | channel                      | view_erase_phantom                        | view_style                             |
+    | decode_value                 | view_erase_phantoms                       | view_style_for_scope                   |
+    | encode_value                 | view_erase_regions                        | view_substr                            |
+    | error_message                | view_erase_status                         | view_symbol_regions                    |
+    | executable_path              | view_expand_by_class                      | view_symbols                           |
+    | expand_variables             | view_export_to_html                       | view_text_point                        |
+    | find_resources               | view_extract_completions                  | view_text_point_utf16                  |
+    | find_syntax_for_file         | view_extract_scope                        | view_text_point_utf8                   |
+    | gather_plugin_profiling_data | view_extract_tokens_with_scopes           | view_text_to_layout                    |
+    | get_clipboard                | view_file_name                            | view_transform_region_from             |
+    | get_clipboard_async          | view_find                                 | view_unfold_region                     |
+    | get_log_build_systems        | view_find_all                             | view_unfold_regions                    |
+    | get_log_commands             | view_find_all_results                     | view_update_popup_content              |
+    | get_log_control_tree         | view_find_all_results_with_text           | view_viewport_extents                  |
+    | get_log_fps                  | view_find_all_with_contents               | view_viewport_position                 |
+    | get_log_indexing             | view_find_by_class                        | view_visible_region                    |
+    | get_log_input                | view_find_by_selector                     | view_window                            |
+    | get_log_result_regex         | view_fold_region                          | view_window_to_layout                  |
+    | get_macro                    | view_fold_regions                         | view_word_from_point                   |
+    | get_syntax                   | view_folded_regions                       | view_word_from_region                  |
+    | html_sheet_set_contents      | view_full_line_from_point                 | window_active_group                    |
+    | incompatible_syntax_patterns | view_full_line_from_region                | window_active_panel                    |
+    | installed_packages_path      | view_get_name                             | window_active_sheet                    |
+    | list_syntaxes                | view_get_overwrite_status                 | window_active_sheet_in_group           |
+    | load_binary_resource         | view_get_regions                          | window_active_view                     |
+    | load_resource                | view_get_status                           | window_active_view_in_group            |
+    | load_settings                | view_has_non_empty_selection_region       | window_automate_ui                     |
+    | log_build_systems            | view_hide_popup                           | window_bring_to_front                  |
+    | log_commands                 | view_indentation_level                    | window_can_accept_input                |
+    | log_control_tree             | view_indented_region                      | window_close_file                      |
+    | log_fps                      | view_indexed_references                   | window_create_output_panel             |
+    | log_indexing                 | view_indexed_symbol_regions               | window_destroy_output_panel            |
+    | log_input                    | view_indexed_symbols                      | window_extract_variables               |
+    | log_message                  | view_insert                               | window_file_history                    |
+    | log_result_regex             | view_is_auto_complete_visible             | window_find_open_file                  |
+    | message_dialog               | view_is_dirty                             | window_find_output_panel               |
+    | notify_application_commands  | view_is_folded                            | window_focus_group                     |
+    | ok_cancel_dialog             | view_is_in_edit                           | window_focus_sheet                     |
+    | open_dialog                  | view_is_loading                           | window_focus_view                      |
+    | packages_path                | view_is_popup_visible                     | window_folders                         |
+    | platform                     | view_is_primary                           | window_get_layout                      |
+    | plugin_host_loaded_plugins   | view_is_read_only                         | window_get_project_data                |
+    | plugin_host_ready            | view_is_scratch                           | window_get_sheet_index                 |
+    | profile_syntax_definition    | view_layout_extents                       | window_get_view_index                  |
+    | run_command                  | view_layout_to_text                       | window_is_dragging                     |
+    | run_syntax_test              | view_layout_to_window                     | window_is_ui_element_visible           |
+    | save_dialog                  | view_line_endings                         | window_lookup_references               |
+    | save_settings                | view_line_from_point                      | window_lookup_references_in_open_files |
+    | score_selector               | view_line_from_region                     | window_lookup_symbol                   |
+    | select_folder_dialog         | view_line_height                          | window_lookup_symbol_in_open_files     |
+    | set_clipboard                | view_lines                                | window_new_file                        |
+    | set_timeout                  | view_match_selector                       | window_new_html_sheet                  |
+    | set_timeout_async            | view_meta_info                            | window_num_groups                      |
+    | settings_add_on_change       | view_preserve_auto_complete_on_focus_lost | window_open_file                       |
+    | settings_clear_on_change     | view_query_phantoms                       | window_panels                          |
+    | settings_erase               | view_replace                              | window_project_file_name               |
+    | settings_get                 | view_reset_reference_document             | window_run_command                     |
+    | settings_get_default         | view_retarget                             | window_select_sheets                   |
+    | settings_has                 | view_row_col                              | window_selected_sheets                 |
+    | settings_set                 | view_row_col_utf16                        | window_selected_sheets_in_group        |
+    | settings_to_dict             | view_row_col_utf8                         | window_set_layout                      |
+    | sheet_close                  | view_run_command                          | window_set_project_data                |
+    | sheet_file_name              | view_scope_name                           | window_set_sheet_index                 |
+    | sheet_group                  | view_score_selector                       | window_set_ui_element_visible          |
+    | sheet_is_semi_transient      | view_selection_add_point                  | window_set_view_index                  |
+    | sheet_is_transient           | view_selection_add_region                 | window_settings                        |
+    | sheet_set_name               | view_selection_clear                      | window_sheets                          |
+    | sheet_view                   | view_selection_contains                   | window_sheets_in_group                 |
+    | sheet_window                 | view_selection_erase                      | window_show_input_panel                |
+    | status_message               | view_selection_get                        | window_show_quick_panel                |
+    | ui_info                      | view_selection_size                       | window_status_message                  |
+    | verify_pc_signature          | view_selection_subtract_region            | window_symbol_locations                |
+    | version                      | view_set_completions                      | window_system_handle                   |
+    | view_add_phantom             | view_set_encoding                         | window_template_settings               |
+    | view_add_regions             | view_set_line_endings                     | window_transient_sheet_in_group        |
+    | view_assign_syntax           | view_set_name                             | window_transient_view_in_group         |
+    | view_begin_edit              | view_set_overwrite_status                 | window_views                           |
+    | view_buffer_id               | view_set_read_only                        | window_views_in_group                  |
+    | view_cached_substr           | view_set_reference_document               | window_workspace_file_name             |
+    | view_can_accept_input        | view_set_scratch                          | windows                                |
+    | view_change_count            | view_set_status                           | yes_no_cancel_dialog                   |
+    | view_change_id               | view_set_viewport_position                |                                        |
 
 
 ## ==⚡ LaTeX WebViewer/First Column/Index Rows
@@ -1274,16 +1274,16 @@ Sublime Text 调用插件主方法时，使用的是以下这种方式：
 
 参数列表和传入参数的命名不统一时，就会出现类似以下这样的错误：
 
->>> window.run_command("type_pad")
-Traceback (most recent call last):
-  File "C:\Program Files\Sublime Text 3\Lib\python38\sublime_plugin.py", line 1518, in run_
-    return self.run(edit)
-TypeError: run() missing 1 required positional argument: 'text'
+    >>> window.run_command("type_pad")
+    Traceback (most recent call last):
+      File "C:\Program Files\Sublime Text 3\Lib\python38\sublime_plugin.py", line 1518, in run_
+        return self.run(edit)
+    TypeError: run() missing 1 required positional argument: 'text'
 
 应该在参数中加入 *args* 配置数据，或者按上面说明的方式，修改函数参数列表：
 
->>> window.run_command("type_pad",{"text":"abc"})
-abc
+    >>> window.run_command("type_pad",{"text":"abc"})
+    abc
 
 了解这此后，就可以在 *input* 方法中依次创建多个输入处理器，供用户输入多个参数，并且完全输入后，参数再汇总传入 *run* 函数。因为，多个输入处理器就需要多个命名参数对应接收处理，构造 *CommandInputHandler* 实例时，可以记录一个参数名，并且通过 *name()* 函数返回给插件加载程序使用。
 
