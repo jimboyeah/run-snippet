@@ -34,6 +34,7 @@ class RunSnippetCommand(TextCommand):
         return self.snippet_test()
 
     def message(self, content):
+        msg = "⚡RS: %s" % content
         sublime.status_message(msg)
         print(msg)
         pass
