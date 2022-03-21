@@ -30,10 +30,10 @@ class RunSnippetCommand(TextCommand):
         pass
 
     def is_enabled(self, *args):
+        self.message("is_enabled(self, edit):")
         return self.snippet_test()
 
     def message(self, content):
-        msg = "⚡RS: %s" % content
         sublime.status_message(msg)
         print(msg)
         pass
@@ -70,12 +70,15 @@ class RunSnippetCommand(TextCommand):
         return False
 
     def snippet_region(self, region):
+        scope = self.view.scope_name(region.a)
         if region.a != region.b:
             code = self.view.substr(region)
             self.code_snippets.append(code)
             self.execute_snippet(code)
+        elif scope=="source.python":
+            code = self.view.substr(Region(1, self.view.size()))
+            self.execute_snippet(code)
         else:
-            scope = self.view.scope_name(region.a)
             (a, b) = self.view.full_line(region)
             if scope.find(self.selector)<0: return None
             start = self.lookup_boundary(Region(a), "```py", min)
@@ -87,7 +90,7 @@ class RunSnippetCommand(TextCommand):
                 self.view.sel().add(codesnippet)
                 self.execute_snippet(code)
 
-    def lookup_boundary(self, region, tag, direction=max, maxline= 500) -> Region or None:
+    def lookup_boundary(self, region, tag, direction=max, maxline= 300) -> Region or None:
         a = direction(region.a, region.b)
 
         maxline = maxline-1
@@ -96,6 +99,7 @@ class RunSnippetCommand(TextCommand):
             line = self.view.substr(rgn)
             a = direction(rgn.a-1, rgn.b+1)
             if line.startswith(tag): return rgn
+            maxline -= 1
 
         size = self.view.size()
         if maxline==-1 or a==direction(-1, size+1): return None
