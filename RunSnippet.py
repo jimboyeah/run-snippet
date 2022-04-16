@@ -43,10 +43,23 @@ class JumpToCommand(TextCommand, ViewEventListener):
         file = self.parseline()
         self.jump(file)
 
+    # Ctrl+P        show_overlay: goto, "show_files": true
+    # Ctrl+R        show_overlay: goto, "text": "@"
+    # Ctrl+G        show_overlay: goto, "text": ":"
+    # Ctrl+;        show_overlay: goto, "text": "#"
+    # F12           goto_definition
+    # Ctrl+Shift+P  show_overlay: command_palette
     def jump(self, file):
-        if file:
-            self.view.window().run_command("show_overlay", 
-            {"overlay":"goto", "show_file": True, "text":file.replace("\\","/")})
+        if not file: return;
+        text = file["text"]
+        kind = file["kind"]
+        symbol = ""
+        if kind == "selected" and None == re.search(r".+[\. /\\].+", text):
+            symbol = "@"
+        # elif kind == "selected" and text.find(" ")<0:
+            # symbol = "#"
+        self.view.window().run_command("show_overlay", 
+        {"overlay":"goto", "show_file": True, "text": symbol+text.replace("\\","/")})
 
     def is_enabled(self, *args):
         Logger.message("jump to is_enabled %s" % str(args))
@@ -64,7 +77,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
         if rng.a != rng.b:
             sel = self.view.substr(rng)
             if len(sel.split("\n"))==1:
-                return sel
+                return {"kind":"selected", "text": sel}
         rnl = self.view.line(rng.a)
         if rnl.a == rnl.b:
             return None
@@ -78,21 +91,21 @@ class JumpToCommand(TextCommand, ViewEventListener):
         r = rp.find("'")
         l = lp.rfind("'")
         if r>=0 and l>=0 :
-            return line[l+1:r+point]
+            return {"kind":"quote", "text": line[l+1:r+point]}
 
         r = rp.find('"')
         l = lp.rfind('"')
         if r>=0 and l>=0 :
-            return line[l+1:r+point]
+            return {"kind":"quote", "text": line[l+1:r+point]}
 
         r = rp.find(")")
         l = lp.rfind("(")
         if r>=0 and l>=0 :
-            return line[l+1:r+point]
+            return {"kind":"quote", "text": line[l+1:r+point]}
 
         l = lp.find(' ')
         if l==1:
-            return line[l+1:].strip()
+            return {"kind":"quote", "text": line[l+1:].strip()}
             
         print(lp, "<===>" , rp)
 
