@@ -1,8 +1,8 @@
-# =🚩 Readme Fist
+# 🚩 Readme Fist
 
 学习 Sublime Text 插件开发，请参考 [Sublime API 探索](APIs.md)
 
-了解 RunSnippetCommand 或 JumpTo 插件请继承阅读本文。
+了解 RunSnippetCommand 或 JumpTo 插件请继续阅读本文。
 
 
 快捷键配置文件 RunSnippet\Default.sublime-keymap
@@ -33,7 +33,7 @@
 ]
 ```
 
-## ==⚡ RunSnippetCommand 插件
+## ⚡ RunSnippetCommand 插件
 
 作为一个重度 Sublime Text 用户，掌握 Plugin-host 插件机制及插件开发是非常必要的，有些稀奇古怪的想法功能都可以实现。
 
@@ -176,7 +176,7 @@ class RunSnippetCommand(TextCommand):
 ```
 
 
-## ==⚡ JumpTo ...
+## ⚡ JumpTo ...
 
 使用 SublimeText 阅读文档和写作是日常活动，特别是最近在阅读 [CPython](https://github.com/python/cpython) 以及 C# 相关开源代码及文档，Sublime 提供的跳转工具非常强大，因为会对代码文件进行符号索引，所以在已经建立索引的工程上，直接按 F12 就可以跳转到光标所在的符号定义上，对于 URL 地址，也可以通过右角菜单打开浏览器进行访问。
 
@@ -223,8 +223,8 @@ class RunSnippetCommand(TextCommand):
 - [x] 带括号的文件 (scope.md)
 - [x] 带引号的文件 'scope.md' 或 "scope.md"
 - [x] 带前导符号且使用空格分隔的文件路径
-- [] 带 # 的设置的行号 (scope.md#LINE_NO)
-- [] 带 # 的设置的标签 (scope.md#ANCHRO)
+- [o] 带 # 的设置的行号 (scope.md#LINE_NO)
+- [o] 带 # 的设置的标签 (scope.md#ANCHRO)
 
 因为 Sublime 文件跳转有个临时状态，文件并没有完全确定打开，此时按方向键及回车之外的键，都会撤消文件的打开。所以，带标签的自动定位还需要寻求其它解决办法。
 
@@ -309,7 +309,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
 ```
 
 
-# =🚩 .Net Core Sources
+# 🚩 .Net Core Sources
 
 如何阅读 .Net Core 源代码？
 
@@ -383,7 +383,7 @@ Roslyn 项目是 .NET 开源编译器，.NET 平台程序的执行模型的不�
 最初 C# 语言的编译器是用 C++ 编写的，后来微软推出了一个新的用 C# 自身编写的编译器：Roslyn，它属于自举编译器，即编译器用自身语言来实现自己。Roslyn 支持 C# 和 Visual Basic 代码编译，并提供丰富的代码分析 API，可以用它来做代码生成器。
 
 
-# =🚩 CPython Source Code Layout
+# 🚩 CPython Source Code Layout
 - Developer Guide: https://devguide.python.org/
 - Exploring CPython’s Internals https://devguide.python.org/exploring/
 - CPython Directory structure https://devguide.python.org/setup/#directory-structure

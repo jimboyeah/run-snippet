@@ -1,5 +1,5 @@
 
-## ==⚡ Sublime API 探索
+## ⚡ Sublime API 探索
 - https://docs.sublimetext.io/guide/extensibility/plugins/
 - https://docs.sublimetext.io/reference/plugins.html
 - https://docs.sublimetext.io/reference/python_api.html
@@ -73,7 +73,7 @@ if sys.version_info >= (3,8):
 了解决 Sublime Text API 的基本框架，核心是 sublime_api 模块，它是 Plugin Host 导出的非开源 API 接口，基于这套开发插件。并且 Sublime Text 官方提供的插件 API 框架也是基于 sublime_api 整理的一套 Python 类框架。
 
 
-### ===🗝 Windows、View、Sheet 关系
+### 🗝 Windows、View、Sheet 关系
 
 每个 Sublime 程序都可以创建多个窗口，也就是系统任务中看到的窗口，每个窗口包含多个 View，它与 Sheet 关联，不同类型的 Sheet 子类形，对应不同的内容格式，有 TextSheet、ImageSheet、HtmlSheet。
 
@@ -135,7 +135,7 @@ sublime_api.html_sheet_set_contents(sheet_id, Substitute)
 ```
 
 
-### ===🗝 settings api
+### 🗝 settings api
 
 配置文件读写管理 API：
 
@@ -165,7 +165,7 @@ print(f"""
     """)
 ```
 
-### ===🗝 Prints to panel
+### 🗝 Prints to panel
 
 直接通过 Sublime API 实现一个 Prints to panel 动态输出文件内容的脚本功能：
 
@@ -255,7 +255,7 @@ for it in range(1, len(installed_packages)):
 ```
 
 
-### ===🗝 Output Panels & run_command
+### 🗝 Output Panels & run_command
 
 Output Panel 也是 View 的一种形式，Sublime 默认提供了 Build Result，对应名称为 output.exec，这个前缀表明了这是一个输出视图对象。可以通过菜单打开：Tools -> Build Results，也可以通过左正角的图标引出 Output Panel 切换菜单。
 
@@ -400,7 +400,7 @@ sapi.window_run_command(window_id, cmd, args)
 ```
 
 
-### ===🗝 Dialogs test
+### 🗝 Dialogs test
 
 以下脚本可以测试 Sublime 提供的各种 Dialogs，包括输入框等：
 
@@ -488,7 +488,7 @@ show_quick_panel(items, switchable_panels, 0)
 ```
 
 
-### ===🗝 sublime_api Module
+### 🗝 sublime_api Module
 
 Informations of class or instance: <module 'sublime_api' (built-in)>
 
@@ -588,7 +588,7 @@ Informations of class or instance: <module 'sublime_api' (built-in)>
     | view_change_id               | view_set_viewport_position                |                                        |
 
 
-## ==⚡ LaTeX WebViewer/First Column/Index Rows
+## ⚡ LaTeX WebViewer/First Column/Index Rows
 
 Sublime Text 插件开发，以下功能于 Windows 平台 4121 版本正常使用：
 
@@ -1015,7 +1015,7 @@ class IndexRowsCommand(sublime_plugin.TextCommand):
 ```
 
 
-## ==⚡ Input handlers 用户输入处理
+## ⚡ Input handlers 用户输入处理
 - https://docs.sublimetext.io/guide/extensibility/plugins/input_handlers.html
 
 Input handlers are a mechanism to query a user for one or multiple input parameters via the Command Palette. They replace the older method of input and quick panels (Window.show_input_panel and Window.show_quick_panel) for a unified user experience in a single component.
