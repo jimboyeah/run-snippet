@@ -3,8 +3,8 @@
         "caption": "Run Snippet code",
         "command": "run_snippet",
         "mnemonic": "R",
-        "keys": ["f6"], 
         "id": "run_snippet",
+        "keys": ["f6"], 
     },
     {
         "caption": "Open Result Panel",
@@ -17,7 +17,7 @@
         "caption": "Jupm to ...",
         "command": "jump_to",
         "mnemonic": "j",
-        "keys": ["f9"], 
         "id": "jump_to",
+        "keys": ["f9"], 
     },
 ]

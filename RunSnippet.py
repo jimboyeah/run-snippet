@@ -1,20 +1,101 @@
+import re
 import sublime_api as sapi
 from sublime import *
 from sublime_plugin import *
 from datetime import datetime
 
-##
-## Context.sublime-menu config:
-## [
-##     {
-##         "caption": "Run Snippet code",
-##         "command": "run_snippet",
-##         "mnemonic": "R",
-##         "id": "run_snippet",
-##         "keys": ["f6"], 
-##     },
-## ]
-##
+'''
+Config Context.sublime-menu and sbulime-keymap:
+[
+    {
+        "caption": "Run Snippet code",
+        "command": "run_snippet",
+        "mnemonic": "R",
+        "id": "run_snippet",
+        "keys": ["f6"], 
+    },
+        {
+        "caption": "Jupm to ...",
+        "command": "jump_to",
+        "mnemonic": "j",
+        "id": "jump_to",
+        "keys": ["f9"], 
+    },
+]
+
+- language-reference\builtin-types\value-types.md
+- language-reference/builtin-types/value-types.md
+- [`is` expression](operators/is.md)
+# csharp\fundamentals\functional\pattern-matching.md
+:::code language="csharp" source="Program.cs" ID="NullableCheck":::
+'''
+
+class JumpToCommand(TextCommand, ViewEventListener):
+
+    def __init__(self, *args):
+        if args and isinstance(args[0], View):
+            self.view = args[0]
+        # print("init JumpTo %s ===" % (str(args)))
+        Logger.message("init %s" % str(args))
+
+    def run(self, edit, *args):
+        # Logger.message("JumpToCommand %s" % str(args))
+        file = self.parseline()
+        self.jump(file)
+
+    def jump(self, file):
+        if file:
+            self.view.window().run_command("show_overlay", 
+            {"overlay":"goto", "show_file": True, "text":file.replace("\\","/")})
+
+    def is_enabled(self, *args):
+        Logger.message("jump to is_enabled %s" % str(args))
+        return self.parseline() != None
+
+    # def on_post_text_command(self, action, extras):
+    #     Logger.message("jump to: %s %s" % (action, str(extras)))
+    #     if action == "drag_select" and extras and 'extend' in extras:
+    #         file = self.parseline()
+    #         Logger.message("jump to: %s" % (file))
+    #         self.jump(file)
+
+    def parseline(self):
+        rng = self.view.sel()[0]
+        if rng.a != rng.b:
+            sel = self.view.substr(rng)
+            if len(sel.split("\n"))==1:
+                return sel
+        rnl = self.view.line(rng.a)
+        if rnl.a == rnl.b:
+            return None
+
+        line = self.view.substr(rnl)
+        point = rng.a - rnl.a
+
+        rp = line[point:] or ""
+        lp = line[0:point] or ""
+
+        r = rp.find("'")
+        l = lp.rfind("'")
+        if r>=0 and l>=0 :
+            return line[l+1:r+point]
+
+        r = rp.find('"')
+        l = lp.rfind('"')
+        if r>=0 and l>=0 :
+            return line[l+1:r+point]
+
+        r = rp.find(")")
+        l = lp.rfind("(")
+        if r>=0 and l>=0 :
+            return line[l+1:r+point]
+
+        l = lp.find(' ')
+        if l==1:
+            return line[l+1:].strip()
+            
+        print(lp, "<===>" , rp)
+
 
 class RunSnippetCommand(TextCommand):
     __dict__ = ['lang_type','code_snippets']
@@ -30,14 +111,8 @@ class RunSnippetCommand(TextCommand):
         pass
 
     def is_enabled(self, *args):
-        self.message("is_enabled(self, edit):")
+        Logger.message("is_enabled(self, edit):")
         return self.snippet_test()
-
-    def message(self, content):
-        msg = "⚡RS: %s" % content
-        sublime.status_message(msg)
-        print(msg)
-        pass
 
     def execute_snippet(self, code):
         window = active_window()
@@ -46,7 +121,7 @@ class RunSnippetCommand(TextCommand):
             execpanel = View(window.create_output_panel("exec", True))
 
         try:
-            print("viewid: %s" % execpanel.view_id)
+            # print("viewid: %s" % execpanel.view_id)
             execpanel.settings().set("auto_indent", False)
             execpanel.sel().clear()
             execpanel.sel().add(Region(0))
@@ -108,7 +183,12 @@ class RunSnippetCommand(TextCommand):
 
 # Console Panel redirect
 name = "exec" # "TestPlugin_OutputPanel"
-class _LogWriter(sublime._LogWriter):
+class Logger(sublime._LogWriter):
+
+    def message(content):
+        msg = "⚡RS: %s" % content
+        sublime.status_message(msg)
+        pass
 
     def write(self, s):
         super().write(s)
@@ -131,5 +211,5 @@ class _LogWriter(sublime._LogWriter):
         # =================== {timestamp} ===================
         panel_view.run_command('insert', {'characters': console_output})
 
-sys.stdout = _LogWriter()
-# sys.stderr = _LogWriter()
+# sys.stdout = Logger()
+# sys.stderr = Logger()
