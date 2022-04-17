@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 import sublime_api as sapi
 from sublime import *
 from sublime_plugin import *
@@ -56,8 +58,8 @@ class JumpToCommand(TextCommand, ViewEventListener):
         symbol = ""
         if kind == "selected" and None == re.search(r".+[\. /\\].+", text):
             symbol = "@"
-        # elif kind == "selected" and text.find(" ")<0:
-            # symbol = "#"
+        elif text.startswith("http"):
+            os.popen("start %s" % text)
         self.view.window().run_command("show_overlay", 
         {"overlay":"goto", "show_file": True, "text": symbol+text.replace("\\","/")})
 
