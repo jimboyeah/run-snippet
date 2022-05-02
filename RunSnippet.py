@@ -108,9 +108,16 @@ class JumpToCommand(TextCommand, ViewEventListener):
         l = lp.find(' ')
         if l==1:
             return {"kind":"quote", "text": line[l+1:].strip()}
-            
-        print(lp, "<===>" , rp)
 
+        l = lp.rfind(' ')
+        r = rp.find(' ')
+        if l == -1: l = 0
+        if r == -1: r = len(rp)
+        block = line[l:r+point].strip()
+        if block.startswith("http"):
+            return {"kind":"block", "text": block}
+        
+        print(lp, "<===>" , rp)
 
 class RunSnippetCommand(TextCommand):
     __dict__ = ['lang_type','code_snippets']
