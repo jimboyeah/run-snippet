@@ -28,6 +28,7 @@ Config Context.sublime-menu and sbulime-keymap:
 - language-reference\builtin-types\value-types.md
 - language-reference/builtin-types/value-types.md
 - [`is` expression](operators/is.md)
+- RunSnippet\readme.md
 # csharp\fundamentals\functional\pattern-matching.md
 :::code language="csharp" source="Program.cs" ID="NullableCheck":::
 '''
@@ -105,9 +106,14 @@ class JumpToCommand(TextCommand, ViewEventListener):
         if r>=0 and l>=0 :
             return {"kind":"quote", "text": line[l+1:r+point]}
 
+        r = rp.find("`")
+        l = lp.rfind("`")
+        if r>=0 and l>=0 :
+            return {"kind":"quote", "text": line[l+1:r+point]}
+
         l = lp.find(' ')
         if l==1:
-            return {"kind":"quote", "text": line[l+1:].strip()}
+            return {"kind":"spaced", "text": line[l+1:].strip()}
 
         l = lp.rfind(' ')
         r = rp.find(' ')
@@ -116,6 +122,8 @@ class JumpToCommand(TextCommand, ViewEventListener):
         block = line[l:r+point].strip()
         if block.startswith("http"):
             return {"kind":"block", "text": block}
+        else:
+            return {"kind":"spaced", "text": block}
         
         print(lp, "<===>" , rp)
 

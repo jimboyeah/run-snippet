@@ -222,10 +222,11 @@ class RunSnippetCommand(TextCommand):
 
 - [x] 带括号的文件 (scope.md)
 - [x] 带引号的文件 'scope.md' 或 "scope.md"
-- [x] 带前导符号且使用空格分隔的文件路径
+- [x] 带前导符号且使用空格分隔的文件路径，如 “- Some/path/to/document"
 - [x] http 标记的 URL 地址
 - [ ] 带 # 的设置的行号 (scope.md#LINE_NO)
 - [ ] 带 # 的设置的标签 (scope.md#ANCHRO)
+- [x] 备选，将字符串作为文件引，如 “some document.md like a keyword"
 
 因为 Sublime 文件跳转有个临时状态，文件并没有完全确定打开，此时按方向键及回车之外的键，都会撤消文件的打开。所以，带标签的自动定位还需要寻求其它解决办法。
 
