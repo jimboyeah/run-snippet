@@ -4,6 +4,16 @@
 
 了解 RunSnippetCommand 或 JumpTo 插件请继续阅读本文。
 
+快速安装 RunSnippet：
+
+1. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> 打开 Sublime Text 命令调板；
+2. 执行 Add Repository 添加本插件代码仓库地址: https://github.com/jimboyeah/run-snippet
+3. 然后执行 Install Package 并输入 RunSnippt 进行确认安装；
+
+可以在 Packages 目录执行以下命令安装 RunSnippet 插件：
+
+    git clone git@github.com/jimboyeah/run-snippet.git
+
 
 快捷键配置文件 RunSnippet\Default.sublime-keymap
 
@@ -76,10 +86,6 @@ print("*" * 80)
 #   {"*" * 80}
 #   ''')
 ```
-
-可以在 Packages 目录执行以下命令安装 RunSnippet 插件：
-
-    git clone git@github.com/jimboyeah/run-snippet.git
 
 
 Sublime Text 4 插件宿主支持 Python 3.3、3.8，但在 Packages 目录安装的插件默认是 Plugin-Host 3.3，某些 Python 3.8 新功能不能使用。

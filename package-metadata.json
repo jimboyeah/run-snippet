@@ -1,0 +1,8 @@
+{
+    "sublime_text": ">=3000",
+    "version": "0.1.0",
+    "platforms": ["*"],
+    "url": "https://github.com/jimboyeah/run-snippet",
+    "description": "RunSnippet plugin for SublimeText, run code snippet in *.md file, and JumpTo - fast to locate documention",
+    "dependencies": []
+}
