@@ -16,8 +16,24 @@
     {
         "caption": "Jupm to ...",
         "command": "jump_to",
-        "mnemonic": "j",
+        "mnemonic": "J",
         "keys": ["f9"], 
         "id": "jump_to",
+    },
+    {
+        "caption": "First Column",
+        "command": "first_column",
+        "mnemonic": "F",
+        "id": "first_column",
+        "keys": ["f1"], 
+        "args": {"paths": [],"files": []}
+    },
+    {
+        "caption": "Index Rows",
+        "command": "index_rows",
+        "mnemonic": "I",
+        "id": "index_rows",
+        "keys": ["f5"], 
+        "args": {"paths": [],"files": []}
     },
 ]

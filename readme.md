@@ -10,6 +10,18 @@
 2. 执行 Add Repository 添加本插件代码仓库地址: https://github.com/jimboyeah/run-snippet
 3. 然后执行 Install Package 并输入 RunSnippt 进行确认安装；
 
+手动添加 Repository，执行菜单： Perferences 🡒 Package Settings 🡒 Package Control 🡒 Settings
+
+```json
+    "repositories":
+    [
+        "https://github.com/daneli1/SublimePreviewAndPrint",
+        "https://github.com/emmetio/sublime-text-plugin/releases/latest/download/registry.json",
+        "https://github.com/gepd/stino/tree/new-stino",
+        "https://github.com/jimboyeah/run-snippet",
+    ],
+```
+
 可以在 Packages 目录执行以下命令安装 RunSnippet 插件：
 
     git clone git@github.com/jimboyeah/run-snippet.git
