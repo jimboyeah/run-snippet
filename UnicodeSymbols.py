@@ -6,7 +6,7 @@ import sublime_plugin
 
 
 
-class ViewLatexListener(sublime_plugin.EventListener):
+class SymbolsListener(sublime_plugin.EventListener):
 
   # def on_activated(self, view):
   #   print("VLL: on_activated [%s]" % view)
