@@ -31,7 +31,7 @@ Plugin functions:
 🡒 RunSnippetCommand: Press F6 to run Python code snippet at cursor in md file
 🡒 FirstColumnCommand: Press F1 move selections to column one
 🡒 IndexRowCommand: Press F5 generate Index No. for selected text
-🡒 SymbolsListener: Unicode Symbols input try: xMathSum <kbd>⮀|</kbd> for `∑`
+🡒 SymbolsListener: Unicode Symbols input try: xHelp or xMathSum <kbd>⮀|</kbd> for `∑`
 
 
 快捷键配置文件 RunSnippet\Default.sublime-keymap
