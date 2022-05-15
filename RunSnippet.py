@@ -59,7 +59,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
         symbol = ""
         if kind == "selected" and None == re.search(r".+[\. /\\].+", text):
             symbol = "@"
-        elif text.startswith("http"):
+        elif text.startswith("http") or text.startswith("file://"):
             return os.popen("start %s" % text)
         self.view.window().run_command("show_overlay", 
         {"overlay":"goto", "show_file": True, "text": symbol+text.replace("\\","/")})
@@ -120,7 +120,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
         if l == -1: l = 0
         if r == -1: r = len(rp)
         block = line[l:r+point].strip()
-        if block.startswith("http"):
+        if block.startswith("http") or block.startswith("file://"):
             return {"kind":"block", "text": block}
         else:
             return {"kind":"spaced", "text": block}

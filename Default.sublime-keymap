@@ -36,4 +36,12 @@
         "keys": ["f5"], 
         "args": {"paths": [],"files": []}
     },
+    {
+        "caption": "Send To ...",
+        "command": "send_to",
+        "mnemonic": "T",
+        "id": "send_to",
+        "keys": ["f4"], 
+        "args": {"id": 0,"file": "some/file"}
+    },
 ]
