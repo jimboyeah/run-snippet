@@ -26,6 +26,9 @@ class SendToCommand(WindowCommand):
   # def __init__(self, window):
   #   super(SendToCommand, self).__init__()
   #   self.window = window
+     
+  windows = None
+  items = None
 
   def is_enabled(self):
     return None is not self.window.active_view().file_name()
@@ -33,23 +36,22 @@ class SendToCommand(WindowCommand):
   def run(self, id=-1, file=None):
     # return reload_plugin("RunSnippet.SendTo")
 
-    items = []
-    for it in sublime.windows():
+    self.items = []
+    self.windows = sublime.windows()
+    for it in self.windows:
       name = str(it.project_file_name())
       name = re.split(r"[/\\]", name)[-1]
-      items.append(str(len(items)) + " - " + name)
+      id = it.id()
+      self.items.append(str(len(self.items)) + ("  [#%d]  " % id) + name)
 
-    print(id, len(items), file)
     if id < len(items) and id>=0 and os.path.isfile(file):
       self.on_select(id, file)
     else:
-      sublime.active_window().active_view().show_popup_menu(items, self.on_select)
+      sublime.active_window().active_view().show_popup_menu(self.items, self.on_select)
       pass
 
   def on_select(self, index, file_name = None):
     if file_name is None:
       file_name = sublime.active_window().active_view().file_name()
-    print({"On select message": items[index], "file_name": file_name})
-    sublime.windows()[index].open_file(file_name)
-    sublime.windows()[index].bring_to_front()
-
+    self.windows[index].open_file(file_name)
+    self.windows[index].bring_to_front()
