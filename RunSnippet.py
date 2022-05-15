@@ -59,10 +59,42 @@ class JumpToCommand(TextCommand, ViewEventListener):
         symbol = ""
         if kind == "selected" and None == re.search(r".+[\. /\\].+", text):
             symbol = "@"
+        elif kind == "ctags":
+            return self.ctags(text)
         elif text.startswith("http") or text.startswith("file://"):
             return os.popen("start %s" % text)
         self.view.window().run_command("show_overlay", 
         {"overlay":"goto", "show_file": True, "text": symbol+text.replace("\\","/")})
+
+    """
+    Vim CTags in-file jumping
+
+    1. Setting options          |set-option|
+    1. Setting options          *set-option* *E764*
+    
+    more for test ...           *set-option* *E764*
+    """
+    def ctags(self, ctag):
+
+        if not isinstance(ctag, str): 
+            return False
+
+        tags = "[|]{0}[|]|[*]{0}[*]".format(ctag)
+        sets = self.view.find_all(tags)
+        ctags_sets = sets
+        # self.view.sel().add_all(sets)
+        rgn = self.view.sel()[0]
+
+        # where I can find the keyboard modifier? 
+        # I need it to reverse the backward direction.
+        for it in sets: 
+            if it.b < rgn.a or it.a <= rgn.a <= it.b: 
+                if sets[-1] != it: continue
+                it = sets[0]
+            self.view.sel().add(it.a+1)
+            self.view.sel().subtract(rgn)
+            self.view.show_at_center(it)
+            break
 
     def is_enabled(self, *args):
         Logger.message("jump to is_enabled %s" % str(args))
@@ -110,6 +142,16 @@ class JumpToCommand(TextCommand, ViewEventListener):
         l = lp.rfind("`")
         if r>=0 and l>=0 :
             return {"kind":"quote", "text": line[l+1:r+point]}
+
+        r = rp.find("|")
+        l = lp.rfind("|")
+        if r>=0 and l>=0 :
+            return {"kind":"ctags", "text": line[l+1:r+point]}
+
+        r = rp.find("*")
+        l = lp.rfind("*")
+        if r>=0 and l>=0 :
+            return {"kind":"ctags", "text": line[l+1:r+point]}
 
         l = lp.find(' ')
         if l==1:

@@ -257,6 +257,8 @@ class RunSnippetCommand(TextCommand):
 - [ ] 带 # 的设置的行号 (scope.md#LINE_NO)
 - [ ] 带 # 的设置的标签 (scope.md#ANCHRO)
 - [x] 备选，将字符串作为文件引，如 “some document.md like a keyword"
+- [x] Vim CTags in-file jump
+- [ ] Cross file jumping like Vim CTags
 
 因为 Sublime 文件跳转有个临时状态，文件并没有完全确定打开，此时按方向键及回车之外的键，都会撤消文件的打开。所以，带标签的自动定位还需要寻求其它解决办法。
 
@@ -267,6 +269,13 @@ class RunSnippetCommand(TextCommand):
     - [`is` expression](operators/is.md)
     # csharp\fundamentals\functional\pattern-matching.md
     :::code language="csharp" source="Program.cs" ID="NullableCheck":::
+
+    Vim CTags in-file jump
+
+    1. Setting options          |set-option|
+    1. Setting options          *set-option* *E764*
+    
+    more for test ...           *set-option* *E764*
 
 默认按 Shift 点击内容进行跳转，配置热键使用更方便。实现中使用了 on_text_command 事件，它可以获取鼠标点击坐标，但没有找到相应的 API 将坐标转换为 Text Point。
 
