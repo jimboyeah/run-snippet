@@ -38,6 +38,15 @@ Plugin functions:
     - 2. modify Context.sublime-menu
     - 3. sublime_plugin.reload_plugin(__name__)
 
+添加配置文件，默认启用分组跳转，如果 Sublime Text 没有设置分组，则在当前 View 弹出文件跳转窗口，这种行为有点打断思路。更合理的做法是 GUI 设置 2 个 Group，并且在另一个 Group 弹出文件选择 Panel：
+
+Load settings from /Packages/Users/RunSnippet.sublime-settings
+
+```json
+{
+    "jump_between_group": true,
+}
+```
 
 快捷键配置文件 RunSnippet\Default.sublime-keymap
 

@@ -55,6 +55,7 @@ class SymbolsListener(sublime_plugin.EventListener):
       ("xmatlab", "Matlab code block", "```${1:matlab}\n${2:codes}\n```"),
       ("xpy",     "Python code block", "```${1:py}\n${2:codes}\n```"),
       ("xcpp",    "cpp code block", "```${1:cpp}\n${2:codes}\n```"),
+      ("xbash",    "sh code block", "```${1:sh}\n${2:codes}\n```"),
       ("xcs",     "cs code block", "```${1:cs}\n${2:codes}\n```"),
       ("xxml",    "xml code block", "```${1:xml}\n${2:codes}\n```"),
       ("xjson",   "json code block", "```${1:json}\n${2:codes}\n```"),

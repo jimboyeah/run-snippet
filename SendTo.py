@@ -44,7 +44,7 @@ class SendToCommand(WindowCommand):
       id = it.id()
       self.items.append(str(len(self.items)) + ("  [#%d]  " % id) + name)
 
-    if id < len(items) and id>=0 and os.path.isfile(file):
+    if id < len(self.items) and id>=0 and os.path.isfile(file):
       self.on_select(id, file)
     else:
       sublime.active_window().active_view().show_popup_menu(self.items, self.on_select)
