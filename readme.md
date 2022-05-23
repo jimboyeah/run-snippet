@@ -4,6 +4,13 @@
 
 了解 RunSnippetCommand 或 JumpTo 插件请继续阅读本文。
 
+Add some material for studing Linux bash script programming and Vim
+
+- [Linux Command Line and Shell Scripting Bible, 3rd Edition, markdown version](material/linux_cli_script_bible.md)
+- [bash 5.1 manual, markdown version](material/bash 5.1.md)
+- [Vim flavor](material/vim_flavor.md)
+
+
 快速安装 RunSnippet：
 
 1. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> 打开 Sublime Text 命令调板；
@@ -40,7 +47,9 @@ Plugin functions:
 
 添加配置文件，默认启用分组跳转，如果 Sublime Text 没有设置分组，则在当前 View 弹出文件跳转窗口，这种行为有点打断思路。更合理的做法是 GUI 设置 2 个 Group，并且在另一个 Group 弹出文件选择 Panel：
 
-Load settings from /Packages/Users/RunSnippet.sublime-settings
+- Load settings from /Packages/Users/RunSnippet.sublime-settings
+- Default setting "jump_between_group": true,
+
 
 ```json
 {
