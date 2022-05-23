@@ -2,10 +2,6 @@
 
 # 🚩 Vim 哲学
 - 大家來學 VIM（一個歷久彌新的編輯器） http://www.study-area.org/tips/vim/
-- Vim 实用技术，第 1 部分: 实用技巧 https://www.ibm.com/developerworks/cn/linux/l-tip-vim1/index.html
-- 神奇的VIM https://www.ibm.com/developerworks/cn/linux/l-tip-prompt/tip15/
-- 普通人的编辑利器——Vim http://blog.sina.com.cn/s/blog_46dac66f010005kw.html
-- Vim 从入门到精通 - https://www.jianshu.com/p/385cb0fdc3a0
 - Learn VIM while playing a game - VIM Adventures https://vim-adventures.com
 - [Vim 中文手册](https://github.com/yianwillis/vimcdoc)
 - [Vim documentation](https://vimguide.readthedocs.io/en/latest/vim.html)
