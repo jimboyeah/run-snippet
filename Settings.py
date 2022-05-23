@@ -38,7 +38,7 @@ def get(key):
     if not RSettings:
         load()
         print("RSettings reload:", RSettings)
-    return RSettings.get(key)
+    return (RSettings.get(key), RSettings)
 
 def on_change():
     global RSettings, _Default

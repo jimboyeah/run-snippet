@@ -68,7 +68,9 @@ class JumpToCommand(TextCommand, ViewEventListener):
             return os.popen("start %s" % text)
 
         for it in range(0, self.view.window().num_groups()):
-            if not Settings.get("jump_between_group"): break
+            (between, rs) = Settings.get("jump_between_group")
+            print(("jump_between_group"), (between, rs))
+            if not between: break
             grouped = self.view.window().views_in_group(it)
             if self.view in grouped:
                 continue
@@ -134,7 +136,9 @@ class JumpToCommand(TextCommand, ViewEventListener):
     #         self.jump(file)
 
     def parseline(self):
-        rng = self.view.sel()[0]
+        sel = self.view.sel()
+        rng = len(sel) and sel[0]
+
         if rng.a != rng.b:
             sel = self.view.substr(rng)
             if len(sel.split("\n"))==1:
