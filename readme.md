@@ -7,7 +7,7 @@
 Add some material for studing Linux bash script programming and Vim
 
 - [Linux Command Line and Shell Scripting Bible, 3rd Edition, markdown version](material/linux_cli_script_bible.md)
-- [bash 5.1 manual, markdown version](material/bash 5.1.md)
+- [bash 5.1 manual, markdown version](material/bash.5.1.md)
 - [Vim flavor](material/vim_flavor.md)
 
 
