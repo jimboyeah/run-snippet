@@ -3,20 +3,14 @@ import sublime_api as sapi
 from sublime import *
 from sublime_plugin import *
 
-'''
-- User/RunSnippet.sublime-settings
-- RunSnippet/material/bash 5.1.md
-- RunSnippet/material/linux_cli_script_bible.md
-'''
-
 _Default = {
     "_filename": "RunSnippet.sublime-settings",
     "jump_between_group": True,
 }
 
-# RSettings = None
+RSettings = None
 
-# __all__ = ["RSettings"]
+__all__ = ["RSettings"]
 
 def init(target, default):
     for key in default:
@@ -26,7 +20,9 @@ def init(target, default):
 
 def load():
     global RSettings, _Default
-    RSettings = load_settings(_Default['_filename'])
+    if not RSettings or not RSettings.settings_id:
+        print("RSettings reload:", RSettings)
+        RSettings = load_settings(_Default['_filename'])
     return RSettings
 
 def save():
@@ -34,17 +30,12 @@ def save():
     save_settings(_Default['_filename'])
 
 def get(key):
-    global RSettings
-    if not RSettings:
-        load()
-        print("RSettings reload:", RSettings)
+    RSettings = load()
     return (RSettings.get(key), RSettings)
 
 def on_change():
-    global RSettings, _Default
-    load()
-    print("settings on_change")
-    print("Load", _Default['_filename'], RSettings)
+    RSettings = load()
+    print("RSettings changed", RSettings.settings_id, RSettings)
     if RSettings:
         print("  ==> jump_between_group", RSettings.get("jump_between_group"))
 
@@ -57,9 +48,3 @@ init(RSettings, _Default)
 # RSettings = save_settings(_Default['_filename'])
 save()
 
-
-# class RSettings(Settings):
-#     """docstring for Setting"""
-#     def __init__(self, arg):
-#         super(Setting, self).__init__()
-#         self.arg = arg

@@ -31,9 +31,21 @@ Config Context.sublime-menu and sbulime-keymap:
 - language-reference\builtin-types\value-types.md
 - language-reference/builtin-types/value-types.md
 - [`is` expression](operators/is.md)
-- RunSnippet\readme.md
 # csharp\fundamentals\functional\pattern-matching.md
 :::code language="csharp" source="Program.cs" ID="NullableCheck":::
+
+- md/sublime.md
+- RunSnippet/readme.md
+- RunSnippet/JumpTo.py
+- RunSnippet/UnicodeSymbols.py
+- Lib/python33/sublime.py
+- Lib/python33/sublime_plugin.py
+- Lib/python38/sublime.py
+- Lib/python38/sublime_plugin.py
+- User/RunSnippet.sublime-settings
+- RunSnippet/material/vim_flavor.md
+- RunSnippet/material/bash.5.1.md
+- RunSnippet/material/linux_cli_script_bible.md
 '''
 
 class JumpToCommand(TextCommand, ViewEventListener):
@@ -66,10 +78,15 @@ class JumpToCommand(TextCommand, ViewEventListener):
             return self.ctags(text)
         elif text.startswith("http") or text.startswith("file://"):
             return os.popen("start %s" % text)
+        elif text.startswith("#"):
+            hash = re.sub(r'[-_#]',lambda x: ' ', text)
+            return self.view.window().run_command('show_overlay',
+                {'overlay':'goto', 'text':'@'+hash})
 
         for it in range(0, self.view.window().num_groups()):
+            print("RSttings", Settings.RSettings.settings_id, Settings.RSettings)
             (between, rs) = Settings.get("jump_between_group")
-            print(("jump_between_group"), (between, rs))
+            print(("jump_between_group"), between, rs.settings_id)
             if not between: break
             grouped = self.view.window().views_in_group(it)
             if self.view in grouped:

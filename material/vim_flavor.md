@@ -586,6 +586,8 @@ The mouse can be enabled for different modes:
 
 标签定位与搜索是 Vim 提供的最为强大的功能之一，通过定义 :tag 标签，可以在文档中，包括帮助文档中快速定位所关心的内容，使用命令 `:help tag` 获取相关帮助文档。
 
+要给 Vim 添加帮助文件的 CTags 跳转功能，可以使用 :helptags 命令生成本地定位标签信息，参考 :help add-local-help。
+
 以下命令可以快速打开帮助文档，并执行命令 Ctrl-W T 将窗口移到 Panel 頁中最大化显示：
 
     vim -p -c "exec 'help index'" -c "exec 'wincmd T'"
@@ -805,8 +807,6 @@ Vim 提供一个函数机制用来给 *tselect* 这些命令成标签列表，�
     endfunc
     set tagfunc=TagFunc
 ```
-
-要给 Vim 添加本场帮助文件，可以使用 :helptags 命令生成本地定位标签信息，参考 :help add-local-help。
 
 
 ## ==⚡ Regex Substitution 查找与替换
@@ -1838,14 +1838,15 @@ v    # into Visual mode and select text
 Windows 平台下，Neovim 控制台版本运行时 Ctrl-Z 会冻结，目前解决办法是重新映射按键：
 
 ```sh
+"" # Ctrl-Z will call nvim frozen
 if has("win32") && has("nvim")
-  nnoremap <C-z> <nop>
-  inoremap <C-z> <nop>
-  vnoremap <C-z> <nop>
-  snoremap <C-z> <nop>
-  xnoremap <C-z> <nop>
-  cnoremap <C-z> <nop>
-  onoremap <C-z> <nop>
+  nnoremap <C-z> :\|"Ctrl-Z may cause nvim frozen<Home>
+  inoremap <C-z> :\|"Ctrl-Z may cause nvim frozen<Home>
+  vnoremap <C-z> :\|"Ctrl-Z may cause nvim frozen<Home>
+  snoremap <C-z> :\|"Ctrl-Z may cause nvim frozen<Home>
+  xnoremap <C-z> :\|"Ctrl-Z may cause nvim frozen<Home>
+  cnoremap <C-z> :\|"Ctrl-Z may cause nvim frozen<Home>
+  onoremap <C-z> :\|"Ctrl-Z may cause nvim frozen<Home>
 endif
 ```
 
@@ -2165,6 +2166,214 @@ Copying and moving text 部分命令参考
 
 ## ==⚡ Command line & History
 - [Command-line - History](doc/cmdline.txt)
+
+命令行是直接输入命令的模式，除了在 Normal mode 中直接响应按键映射的命令，在命令行中可以直接输入要执行的命令，或者调用 API 函数。
+
+在命令行输入 “ 开头将当作注解，而忽略所有后续输入内容。
+
+许多命令都可以接收一个 range 指定行号范围信息，格式有多种，有逗号、分号分隔式，有 Visual Range 式，有正则匹配式等。
+
+比如复制当前行往后共 3 行内容，命令为 .,+2y，句点表示当前行，+2 表示后续两行，总共 3 行内容。
+
+使用逗号和分号作分隔的差别在于，分号会设置光标为分号后面的数值所指位置。
+
+Some Ex commands accept a line range in front of them.  This is noted as
+[range].  It consists of one or more line specifiers, separated with ',' or
+';'.
+
+The basics are explained in section |10.3| of the user manual.
+
+                        *:,* *:;*
+When separated with ';' the cursor position will be set to that line
+before interpreting the next line specifier.  This doesn't happen for ','.
+Examples: >
+   4,/this line/
+<   from line 4 till match with "this line" after the cursor line. >
+   5;/that line/
+<   from line 5 till match with "that line" after line 5.
+
+The default line specifier for most commands is the cursor position, but the
+commands ":write" and ":global" have the whole file (1,$) as default.
+
+If more line specifiers are given than required for the command, the first
+one(s) will be ignored.
+
+Line numbers may be specified with:     *:range* *{address}*
+
+    {number}    an absolute line number
+    .           the current line                    *:.*
+    $           the last line in the file           *:$*
+    %           equal to 1,$ (the entire file)      *:%*
+    't          position of mark t (lowercase)      *:'*
+    'T          position of mark T (uppercase); when the mark is in
+                another file it cannot be used in a range
+    /{pattern}[/]   the next line where {pattern} matches     *:/*
+    ?{pattern}[?]   the previous line where {pattern} matches *:?*
+    \/          the next line where the previously used search
+                pattern matches
+    \?          the previous line where the previously used search
+                pattern matches
+    \&          the next line where the previously used substitute
+                pattern matches
+
+Each may be followed (several times) by '+' or '-' and an optional number.
+This number is added or subtracted from the preceding line number.  If the
+number is omitted, 1 is used.
+
+命令行中还可以使用各种特殊符号，比如 % 号这个符号就表示当前的文件名，可以在命令中使用：
+
+    :echo expand("%")
+    :source %
+    :!echo "%"
+    :let &tags = expand("%:p:h") . "/tags"
+
+注意，如果直接在 Vim 内部解释这些特殊符号，可能需要主动调用 expand() 方法进行扩展处理，根据具体情况决定。如果，将这些符号传递到外部命令使用，Vim 会自动扩展，替换为具体值。
+
+expand({expr} [, {nosuf} [, {list}]])                           expand()
+                Expand wildcards and the following special keywords in {expr}.
+                'wildignorecase' applies.
+
+                If {list} is given and it is TRUE, a List will be returned.
+                Otherwise the result is a String and when there are several
+                matches, they are separated by <NL> characters.  [Note: in
+                version 5.0 a space was used, which caused problems when a
+                file name contains a space]
+
+                If the expansion fails, the result is an empty string.  A name
+                for a non-existing file is not included, unless {expr} does
+                not start with '%', '#' or '<', see below.
+
+                When {expr} starts with '%', '#' or '<', the expansion is done
+                like for the cmdline-special variables with their associated
+                modifiers.  Here is a short overview:
+
+                        %               current file name
+                        #               alternate file name
+                        #n              alternate file name n
+                        <cfile>         file name under the cursor
+                        <afile>         autocmd file name
+                        <abuf>          autocmd buffer number (as a String!)
+                        <amatch>        autocmd matched name
+                        <sfile>         sourced script file or function name
+                        <slnum>         sourced script line number or function
+                                        line number
+                        <sflnum>        script file line number, also when in
+                                        a function
+                        <cword>         word under the cursor
+                        <cWORD>         WORD under the cursor
+                        <client>        the {clientid} of the last received
+                                        message server2client()
+                Modifiers:
+                        :p              expand to full path
+                        :h              head (last path component removed)
+                        :t              tail (last path component only)
+                        :r              root (one extension removed)
+                        :e              extension only
+
+==============================================================================
+6. Ex special characters                *cmdline-special*
+
+Note: These are special characters in the executed command line.  If you want
+to insert special things while typing you can use the CTRL-R command.  For
+example, "%" stands for the current file name, while CTRL-R % inserts the
+current file name right away.  See |c_CTRL-R|.
+
+Note:  If you want to avoid the effects of special characters in a Vim script
+you may want to use |fnameescape()|.  Also see |`=|.
+
+
+In Ex commands, at places where a file name can be used, the following
+characters have a special meaning.  These can also be used in the expression
+function |expand()|.
+    %   Is replaced with the current file name.       *:_%* *c_%*
+    #   Is replaced with the alternate file name.     *:_#* *c_#*
+        This is remembered for every window.
+    #n  (where n is a number) is replaced with        *:_#0* *:_#n*
+        the file name of buffer n.  "#0" is the same as "#".     *c_#n*
+    ##  Is replaced with all names in the argument list   *:_##* *c_##*
+        concatenated, separated by spaces.  Each space in a name
+        is preceded with a backslash.
+    #<n (where n is a number > 0) is replaced with old    *:_#<* *c_#<*
+        file name n.  See |:oldfiles| or |v:oldfiles| to get the
+        number.                         *E809*
+        {only when compiled with the |+eval| and |+viminfo| features}
+
+Note that these, except "#<n", give the file name as it was typed.  If an
+absolute path is needed (when using the file name from a different directory),
+you need to add ":p".  See |filename-modifiers|.
+
+The "#<n" item returns an absolute path, but it will start with "~/" for files
+below your home directory.
+
+Note that backslashes are inserted before spaces, so that the command will
+correctly interpret the file name.  But this doesn't happen for shell
+commands.  For those you probably have to use quotes (this fails for files
+that contain a quote and wildcards): >
+    :!ls "%"
+    :r !spell "%"
+
+To avoid the special meaning of '%' and '#' insert a backslash before it.
+Detail: The special meaning is always escaped when there is a backslash before
+it, no matter how many backslashes.
+    you type:       result  ~
+       #            alternate.file
+       \#           #
+       \\#          \#
+Also see |`=|.
+
+                   *:<cword>* *<cword>* *:<cWORD>* *<cWORD>*
+                   *:<cexpr>* *<cexpr>* *:<cfile>* *<cfile>*
+                   *:<afile>* *<afile>* *:<abuf>* *<abuf>*
+                   *:<amatch>* *<amatch>*
+                   *:<sfile>* *<sfile>* *:<slnum>* *<slnum>*
+                   *:<sflnum>* *<sflnum>* *E499* *E500*
+
+Examples, when the file name is "src/version.c", current dir
+"/home/mool/vim": >
+  :p            /home/mool/vim/src/version.c
+  :p:.                     src/version.c
+  :p:~               ~/vim/src/version.c
+  :h                       src
+  :p:h          /home/mool/vim/src
+  :p:h:h        /home/mool/vim
+  :t                       version.c
+  :p:t                     version.c
+  :r                       src/version
+  :p:r          /home/mool/vim/src/version
+  :t:r                     version
+  :e                           c
+  :s?version?main?             src/main.c
+  :s?version?main?:p    /home/mool/vim/src/main.c
+  :p:gs?/?\\?       \home\mool\vim\src\version.c
+
+Examples, when the file name is "src/version.c.gz": >
+  :p            /home/mool/vim/src/version.c.gz
+  :e                             gz
+  :e:e                         c.gz
+  :e:e:e                       c.gz
+  :e:e:r                       c
+  :r                       src/version.c
+  :r:e                         c
+  :r:r                     src/version
+  :r:r:r                   src/version
+<
+                    *extension-removal* *:_%<*
+If a "<" is appended to "%", "#", "#n" or "CTRL-V p" the extension of the file
+name is removed (everything after and including the last '.' in the file
+name).  This is included for backwards compatibility with version 3.0, the
+":r" form is preferred.  Examples: >
+
+    %       current file name
+    %<      current file name without extension
+    #       alternate file name for current window
+    #<      idem, without extension
+    #31     alternate file number 31
+    #31<        idem, without extension
+    <cword>     word under the cursor
+    <cWORD>     WORD under the cursor (see |WORD|)
+    <cfile>     path name under the cursor
+    <cfile><    idem, without extension
+
 
 通过学习 Vim 寄存器，就可以解锁新姿势：往命令行粘贴内容的技能。
 
@@ -2861,11 +3070,11 @@ wincmd T                   | " Move the current window to a new tab page.
 - [The Python Interface to Vim](doc/if_pyth.txt)
 - https://github.com/nanotee/nvim-lua-guide
 - https://spacevim.org/use-vim-as-a-lua-ide/
+- https://realpython.com/vim-and-python-a-match-made-in-heaven/
 - [Learn X in Y minutes - Lua](https://learnxinyminutes.com/docs/lua/)
-- [The Rise of Worse is Better - Richard P. Gabriel](https://dreamsongs.com/RiseOfWorseIsBetter.html)
 - [From init.vim to init.lua - a crash course](https://www.notonlycode.org/neovim-lua-config/)
 - [QuickJS Javascript Engine - Fabrice Bellard](https://bellard.org/quickjs)
-
+- [The Rise of Worse is Better - Richard P. Gabriel](https://dreamsongs.com/RiseOfWorseIsBetter.html)
 
 虽然，Vim 有自家的脚本解释器实现，但是 Lua/Python 等脚本接口也得到了支持，编译 Vim 时需要使用 +lua feature 等编译选项。Vim 会向这些脚本接口提供一个 vim 模块，外部脚本引擎通过它来与 Vim 宿主通信。除了一些通用的功能对象，还会根据不同的脚本接口提供专用的对象，
 
@@ -2934,6 +3143,65 @@ Main Features:
   8. ⇨ Command line interpreter with contextual colorization implemented in Javascript.
   9. ⇨ Small built-in standard library with C library wrappers.
 
+NeoVim 选择了集成 Node.js 来提供 JavaScript 脚本扩展能力，它使用 V8 脚本引擎。
+
+NeoVim 使用 Python 脚本扩展可以支持虚拟环境，并且可以硬编码指定 Python 可执行程序为每个项目提供专用的环境：
+
+```sh
+# Example using pyenv:
+pyenv install 3.4.4
+pyenv virtualenv 3.4.4 py3nvim
+pyenv activate py3nvim
+python3 -m pip install pynvim
+pyenv which python  # Note the path
+
+# If you run into problems, uninstall _both_ then install "pynvim" again:
+python -m pip uninstall neovim pynvim
+python -m pip install --user --upgrade pynvim
+
+# The last command reports the interpreter path, add it to your init.vim:
+let g:python3_host_prog = '/path/to/py3nvim/bin/python'
+```
+
+如果硬编码指定 Python 路径，可以不安装 Python 客户端模块。旧的客户端模块是 "neovim"，更新为 "pynvim"。
+
+
+PYTHON PROVIDER CONFIGURATION
+                                                g:python3_host_prog
+Command to start Python 3 (executable, not directory). Setting this makes
+startup faster. Useful for working with virtualenvs. Must be set before any
+check for has("python3").
+    let g:python3_host_prog = '/path/to/python3'
+
+                                                g:loaded_python3_provider
+To disable Python 3 support:
+    let g:loaded_python3_provider = 0
+
+virtualenvs often, you should assign one
+virtualenv for Neovim and hard-code the interpreter path via
+g:python3_host_prog so that the "pynvim" package is not required
+for each virtualenv.
+
+Virtualenv Support
+One issue with the goto definition above is that VIM, by default, doesn’t know anything about virtualenv, so you have to make VIM and YouCompleteMe aware of your virtualenv by adding the following lines of code to .vimrc:
+
+```sh
+"" # python with virtualenv support
+"" # apt-get update
+"" # apt-get install python3-venv
+"" # python3 -m venv /path/to/new/venv
+py << EOF
+import os
+import sys
+if 'VIRTUAL_ENV' in os.environ:
+  project_base_dir = os.environ['VIRTUAL_ENV']
+  activate_this = os.path.join(project_base_dir, 'bin/activate_this.py')
+  execfile(activate_this, dict(__file__=activate_this))
+EOF
+```
+
+This determines if you are running inside a virtualenv, switches to that specific virtualenv, and then sets up your system path so that YouCompleteMe will find the appropriate site packages.
+
 
 关于如何集成 Python 运行环境，请参考 Python 官方文档 Extending and Embedding the Python Interpreter - Embedding Python in Another Application
 
@@ -2941,6 +3209,7 @@ Main Features:
 
 Scripting Interfaces
 
+- [Providers](doc/provider.txt)
 - [using Cscope with Vim](doc/if_cscop.txt) - (vim82/src/if_cscop.c)
 - [Lua interface](doc/if_lua.txt)           - (vim82/src/if_lua.c)
 - [MzScheme interface](doc/if_mzsch.txt)    - (vim82/src/if_mzsch.c)
@@ -2963,6 +3232,8 @@ Scripting Interfaces
 | Window userdata  | pyeval(), py3eval()  |                     |
 | luaeval()        |                      |                     |
 
+### ===🗝 Python Interface
+
 The Python Interface to Vim             *python* *Python*
 
 1. Commands                     |python-commands|
@@ -2979,17 +3250,73 @@ The Python Interface to Vim             *python* *Python*
     - vim.chdir(*args, **kwargs)    |python-chdir|
     - vim.fchdir(*args, **kwargs)   |python-fchdir|
     - Error object vim.error        |python-error|
+    - vim.buffers                   |python-buffers|
+    - vim.windows                   |python-windows|
+    - vim.tabpages                  |python-tabpages|
+    - vim.current                   |python-current|
+    - vim.vars                      |python-vars|
+    - vim.vvars                     |python-vvars|
+    - vim.options                   |python-options|
+    - Input/Output from Python      |python-output| |python-input|
+    - Python 'runtimepath' handling |python-special-path|
+    - vim.VIM_SPECIAL_PATH          |python-VIM_SPECIAL_PATH|
+    - vim.find_module(...)          |python-find_module|
+    - vim.path_hook(path)           |python-path_hook|
+    - vim._get_paths                |python-_get_paths|
 3. Buffer objects               |python-buffer|
+    - The buffer object attributes are: |buffer-attributes|
+    ⚑ b.vars      Dictionary-like object
+    ⚑ b.options   Mapping object
+    ⚑ b.name      String, RW. Contains buffer name (full path).
+    ⚑ b.number    Buffer number. Can be used as |python-buffers| key.
+    ⚑ b.valid     True or False.
+    - The buffer object methods are:    |buffer-methods|
+    ⚐ b.append(str)   Append a line to the buffer
+    ⚐ b.append(str, nr)  Idem, below line "nr"
+    ⚐ b.append(list)  Append a list of lines to the buffer
+    ⚐ b.append(list, nr)  Idem, below line "nr"
+    ⚐ b.mark(name)    Return a tuple (row,col) the marked position
+    ⚐ b.range(s,e)    Return a range object
 4. Range objects                |python-range|
+    - The range object attributes are:    |range-attributes|
+    ⚑ r.start     Index of first line into the buffer
+    ⚑ r.end       Index of last line into the buffer
+    - The range object methods are:       |range-methods|
+    ⚐ r.append(str)   Append a line to the range
+    ⚐ r.append(str, nr)  Idem, after line "nr"
+    ⚐ r.append(list)  Append a list of lines to the range
+    ⚐ r.append(list, nr)  Idem, after line "nr"
 5. Window objects               |python-window|
+    - Window attributes are:
+    ⚑ buffer (read-only)  The buffer displayed in this window
+    ⚑ cursor (read-write) The current cursor position, tuple (row,col).
+    ⚑ height (read-write) The window height, in rows
+    ⚑ width (read-write)  The window width, in columns
+    ⚑ vars (read-only)    The window |w:| variables.
+    ⚑ options (read-only) The window-local options.
+    ⚑ number (read-only)  Window number.  The first window has number 1.
+    ⚑ row, col (read-only) On-screen window position in display cells.
+    ⚑ tabpage (read-only) Window tab page.
+    ⚑ valid (read-write)  True or False.
 6. Tab page objects             |python-tabpage|
+    - Tab page attributes are:
+    ⚐ number      The tab page number like the one returned by |tabpagenr()|.
+    ⚐ windows     Like |python-windows|, but for current tab page.
+    ⚐ vars        The tab page |t:| variables.
+    ⚐ window      Current tabpage window.
+    ⚐ valid       True or False. page is invalid when it is closed.
 7. vim.bindeval objects         |python-bindeval-objects|
-8. pyeval(), py3eval() Vim functions        |python-pyeval|
+    - vim.Dictionary object          |python-Dictionary|
+    - vim.List object                |python-List|
+    - vim.Function object            |python-Function|
+8. pyeval(), py3eval() Vim functions |python-pyeval|
 9. Dynamic loading              |python-dynamic|
 10. Python 3                    |python3|
 11. Python X                    |python_x|
-12. Building with Python support        |python-building|
+12. Building with Python support|python-building|
 
+
+### ===🗝 Python Commands
 
 ==============================================================================
 1. Commands                     *python-commands*
@@ -3093,6 +3420,8 @@ Here are some examples                  *python-examples*  >
 (Note that changes - like the imports - persist from one command to the next,
 just like in the Python interpreter.)
 
+
+### ===🗝 vim module
 
 ==============================================================================
 2. The vim module                   *python-vim*
@@ -3204,6 +3533,742 @@ Constants of the "vim" module
     to which the variables referred.
 
 
+vim.buffers                     *python-buffers*
+    A mapping object providing access to the list of vim buffers.  The
+    object supports the following operations: >
+
+        :py b = vim.buffers[i]  # Indexing (read-only)
+        :py b in vim.buffers    # Membership test
+        :py n = len(vim.buffers)    # Number of elements
+        :py for b in vim.buffers:   # Iterating over buffer list
+<
+vim.windows                     *python-windows*
+    A sequence object providing access to the list of vim windows.  The
+    object supports the following operations: >
+
+        :py w = vim.windows[i]  # Indexing (read-only)
+        :py w in vim.windows    # Membership test
+        :py n = len(vim.windows)    # Number of elements
+        :py for w in vim.windows:   # Sequential access
+<   Note: vim.windows object always accesses current tab page. 
+    |python-tabpage|.windows objects are bound to parent |python-tabpage| 
+    object and always use windows from that tab page (or throw vim.error 
+    in case tab page was deleted). You can keep a reference to both 
+    without keeping a reference to vim module object or |python-tabpage|, 
+    they will not lose their properties in this case.
+
+vim.tabpages                        *python-tabpages*
+    A sequence object providing access to the list of vim tab pages. The 
+    object supports the following operations: >
+
+        :py t = vim.tabpages[i] # Indexing (read-only)
+        :py t in vim.tabpages   # Membership test
+        :py n = len(vim.tabpages)   # Number of elements
+        :py for t in vim.tabpages:  # Sequential access
+<
+vim.current                     *python-current*
+    An object providing access (via specific attributes) to various
+    "current" objects available in vim:
+        vim.current.line    The current line (RW)       String
+        vim.current.buffer  The current buffer (RW)     Buffer
+        vim.current.window  The current window (RW)     Window
+        vim.current.tabpage The current tab page (RW)   TabPage
+        vim.current.range   The current line range (RO) Range
+
+    The last case deserves a little explanation.  When the :python or
+    :pyfile command specifies a range, this range of lines becomes the
+    "current range".  A range is a bit like a buffer, but with all access
+    restricted to a subset of lines.  See |python-range| for more details.
+
+    Note: When assigning to vim.current.{buffer,window,tabpage} it expects 
+    valid |python-buffer|, |python-window| or |python-tabpage| objects 
+    respectively. Assigning triggers normal (with |autocommand|s) 
+    switching to given buffer, window or tab page. It is the only way to 
+    switch UI objects in python: you can't assign to 
+    |python-tabpage|.window attribute. To switch without triggering 
+    autocommands use >
+
+        py << EOF
+        saved_eventignore = vim.options['eventignore']
+        vim.options['eventignore'] = 'all'
+        try:
+            vim.current.buffer = vim.buffers[2] # Switch to buffer 2
+        finally:
+            vim.options['eventignore'] = saved_eventignore
+        EOF
+<
+vim.vars                        *python-vars*
+vim.vvars                       *python-vvars*
+    Dictionary-like objects holding dictionaries with global (|g:|) and 
+    vim (|v:|) variables respectively. Identical to `vim.bindeval("g:")`, 
+    but faster.
+
+vim.options                     *python-options*
+    Object partly supporting mapping protocol (supports setting and 
+    getting items) providing a read-write access to global options.
+    Note: unlike |:set| this provides access only to global options. You
+    cannot use this object to obtain or set local options' values or
+    access local-only options in any fashion. Raises KeyError if no global
+    option with such name exists (i.e. does not raise KeyError for
+    |global-local| options and global only options, but does for window-
+    and buffer-local ones).  Use |python-buffer| objects to access to
+    buffer-local options and |python-window| objects to access to
+    window-local options.
+
+    Type of this object is available via "Options" attribute of vim 
+    module.
+
+Output from Python                  *python-output*
+    Vim displays all Python code output in the Vim message area.  Normal
+    output appears as information messages, and error output appears as
+    error messages.
+
+    In implementation terms, this means that all output to sys.stdout
+    (including the output from print statements) appears as information
+    messages, and all output to sys.stderr (including error tracebacks)
+    appears as error messages.
+
+                            *python-input*
+    Input (via sys.stdin, including input() and raw_input()) is not
+    supported, and may cause the program to crash.  This should probably be
+    fixed.
+
+            *python2-directory* *python3-directory* *pythonx-directory*
+Python 'runtimepath' handling               *python-special-path*
+
+In python vim.VIM_SPECIAL_PATH special directory is used as a replacement for 
+the list of paths found in 'runtimepath': with this directory in sys.path and 
+vim.path_hooks in sys.path_hooks python will try to load module from 
+{rtp}/python2 (or python3) and {rtp}/pythonx (for both python versions) for 
+each {rtp} found in 'runtimepath'.
+
+Implementation is similar to the following, but written in C: >
+
+```py
+from imp import find_module, load_module
+import vim
+import sys
+
+class VimModuleLoader(object):
+    def __init__(self, module):
+        self.module = module
+
+    def load_module(self, fullname, path=None):
+        return self.module
+
+def _find_module(fullname, oldtail, path):
+    idx = oldtail.find('.')
+    if idx > 0:
+        name = oldtail[:idx]
+        tail = oldtail[idx+1:]
+        fmr = find_module(name, path)
+        module = load_module(fullname[:-len(oldtail)] + name, *fmr)
+        return _find_module(fullname, tail, module.__path__)
+    else:
+        fmr = find_module(fullname, path)
+        return load_module(fullname, *fmr)
+
+# It uses vim module itself in place of VimPathFinder class: it does not 
+# matter for python which object has find_module function attached to as 
+# an attribute.
+class VimPathFinder(object):
+    @classmethod
+    def find_module(cls, fullname, path=None):
+        try:
+            return VimModuleLoader(_find_module(fullname, fullname, path or vim._get_paths()))
+        except ImportError:
+            return None
+
+    @classmethod
+    def load_module(cls, fullname, path=None):
+        return _find_module(fullname, fullname, path or vim._get_paths())
+
+def hook(path):
+    if path == vim.VIM_SPECIAL_PATH:
+        return VimPathFinder
+    else:
+        raise ImportError
+
+sys.path_hooks.append(hook)
+```
+
+vim.VIM_SPECIAL_PATH                    *python-VIM_SPECIAL_PATH*
+    String constant used in conjunction with vim path hook. If path hook 
+    installed by vim is requested to handle anything but path equal to 
+    vim.VIM_SPECIAL_PATH constant it raises ImportError. In the only other 
+    case it uses special loader.
+
+    Note: you must not use value of this constant directly, always use 
+          vim.VIM_SPECIAL_PATH object.
+
+vim.find_module(...)                    *python-find_module*
+vim.path_hook(path)                 *python-path_hook*
+    Methods or objects used to implement path loading as described above. 
+    You should not be using any of these directly except for vim.path_hook 
+    in case you need to do something with sys.meta_path. It is not 
+    guaranteed that any of the objects will exist in the future vim 
+    versions.
+
+vim._get_paths                      *python-_get_paths*
+    Methods returning a list of paths which will be searched for by path 
+    hook. You should not rely on this method being present in future 
+    versions, but can use it for debugging.
+
+    It returns a list of {rtp}/python2 (or {rtp}/python3) and 
+    {rtp}/pythonx directories for each {rtp} in 'runtimepath'.
+
+### ===🗝 Buffer objects
+
+==============================================================================
+3. Buffer objects                   *python-buffer*
+
+Buffer objects represent vim buffers.  You can obtain them in a number of ways:
+    - via vim.current.buffer (|python-current|)
+    - from indexing vim.buffers (|python-buffers|)
+    - from the "buffer" attribute of a window (|python-window|)
+
+Buffer objects have two read-only attributes - name - the full file name for
+the buffer, and number - the buffer number.  They also have three methods
+(append, mark, and range; see below).
+
+You can also treat buffer objects as sequence objects.  In this context, they
+act as if they were lists (yes, they are mutable) of strings, with each
+element being a line of the buffer.  All of the usual sequence operations,
+including indexing, index assignment, slicing and slice assignment, work as
+you would expect.  Note that the result of indexing (slicing) a buffer is a
+string (list of strings).  This has one unusual consequence - b[:] is different
+from b.  In particular, "b[:] = None" deletes the whole of the buffer, whereas
+"b = None" merely updates the variable b, with no effect on the buffer.
+
+Buffer indexes start at zero, as is normal in Python.  This differs from vim
+line numbers, which start from 1.  This is particularly relevant when dealing
+with marks (see below) which use vim line numbers.
+
+The buffer object attributes are:
+                                                        *buffer-attributes*
+    b.vars      Dictionary-like object used to access 
+            |buffer-variable|s.
+    b.options   Mapping object (supports item getting, setting and 
+            deleting) that provides access to buffer-local options 
+            and buffer-local values of |global-local| options. Use 
+            |python-window|.options if option is window-local, 
+            this object will raise KeyError. If option is 
+            |global-local| and local value is missing getting it 
+            will return None.
+    b.name      String, RW. Contains buffer name (full path).
+            Note: when assigning to b.name |BufFilePre| and 
+            |BufFilePost| autocommands are launched.
+    b.number    Buffer number. Can be used as |python-buffers| key.
+            Read-only.
+    b.valid     True or False. Buffer object becomes invalid when 
+            corresponding buffer is wiped out.
+
+The buffer object methods are:
+                                                        *buffer-methods*
+    b.append(str)   Append a line to the buffer
+    b.append(str, nr)  Idem, below line "nr"
+    b.append(list)  Append a list of lines to the buffer
+            Note that the option of supplying a list of strings to
+            the append method differs from the equivalent method
+            for Python's built-in list objects.
+    b.append(list, nr)  Idem, below line "nr"
+    b.mark(name)    Return a tuple (row,col) representing the position
+            of the named mark (can also get the []"<> marks)
+    b.range(s,e)    Return a range object (see |python-range|) which
+            represents the part of the given buffer between line
+            numbers s and e |inclusive|.
+
+Note that when adding a line it must not contain a line break character '\n'.
+A trailing '\n' is allowed and ignored, so that you can do: >
+    :py b.append(f.readlines())
+
+Buffer object type is available using "Buffer" attribute of vim module.
+
+Examples (assume b is the current buffer) >
+
+        :py print b.name            # write the buffer file name
+        :py b[0] = "hello!!!"       # replace the top line
+        :py b[:] = None             # delete the whole buffer
+        :py del b[:]                # delete the whole buffer
+        :py b[0:0] = [ "a line" ]   # add a line at the top
+        :py del b[2]                # delete a line (the third)
+        :py b.append("bottom")      # add a line at the bottom
+        :py n = len(b)              # number of lines
+        :py (row,col) = b.mark('a') # named mark
+        :py r = b.range(1,5)        # a sub-range of the buffer
+        :py b.vars["foo"] = "bar"   # assign b:foo variable
+        :py b.options["ff"] = "dos" # set fileformat
+        :py del b.options["ar"]     # same as :set autoread<
+
+### ===🗝 Range objects 
+
+==============================================================================
+4. Range objects                    *python-range*
+
+Range objects represent a part of a vim buffer.  You can obtain them in a
+number of ways:
+    - via vim.current.range (|python-current|)
+    - from a buffer's range() method (|python-buffer|)
+
+A range object is almost identical in operation to a buffer object.  However,
+all operations are restricted to the lines within the range (this line range
+can, of course, change as a result of slice assignments, line deletions, or
+the range.append() method).
+
+The range object attributes are:
+                                                        *range-attributes*
+    r.start     Index of first line into the buffer
+    r.end       Index of last line into the buffer
+
+The range object methods are:
+                                                        *range-methods*
+    r.append(str)   Append a line to the range
+    r.append(str, nr)  Idem, after line "nr"
+    r.append(list)  Append a list of lines to the range
+            Note that the option of supplying a list of strings to
+            the append method differs from the equivalent method
+            for Python's built-in list objects.
+    r.append(list, nr)  Idem, after line "nr"
+
+Range object type is available using "Range" attribute of vim module.
+
+Example (assume r is the current range):
+    # Send all lines in a range to the default printer
+    vim.command("%d,%dhardcopy!" % (r.start+1,r.end+1))
+
+### ===🗝 Window objects
+
+==============================================================================
+5. Window objects                   *python-window*
+
+Window objects represent vim windows.  You can obtain them in a number of ways:
+    - via vim.current.window (|python-current|)
+    - from indexing vim.windows (|python-windows|)
+    - from indexing "windows" attribute of a tab page (|python-tabpage|)
+    - from the "window" attribute of a tab page (|python-tabpage|)
+
+You can manipulate window objects only through their attributes.  They have no
+methods, and no sequence or other interface.
+
+Window attributes are:
+    buffer (read-only)  The buffer displayed in this window
+    cursor (read-write) The current cursor position in the window
+                This is a tuple, (row,col).
+    height (read-write) The window height, in rows
+    width (read-write)  The window width, in columns
+    vars (read-only)    The window |w:| variables. Attribute is 
+                unassignable, but you can change window 
+                variables this way
+    options (read-only) The window-local options. Attribute is 
+                unassignable, but you can change window 
+                options this way. Provides access only to 
+                window-local options, for buffer-local use 
+                |python-buffer| and for global ones use 
+                |python-options|. If option is |global-local| 
+                and local value is missing getting it will 
+                return None.
+    number (read-only)  Window number.  The first window has number 1.
+                This is zero in case it cannot be determined
+                (e.g. when the window object belongs to other
+                tab page).
+    row, col (read-only)    On-screen window position in display cells.
+                First position is zero.
+    tabpage (read-only) Window tab page.
+    valid (read-write)  True or False. Window object becomes invalid 
+                when corresponding window is closed.
+
+The height attribute is writable only if the screen is split horizontally.
+The width attribute is writable only if the screen is split vertically.
+
+Window object type is available using "Window" attribute of vim module.
+
+### ===🗝 Tab page objects
+
+==============================================================================
+6. Tab page objects                 *python-tabpage*
+
+Tab page objects represent vim tab pages. You can obtain them in a number of 
+ways:
+    - via vim.current.tabpage (|python-current|)
+    - from indexing vim.tabpages (|python-tabpages|)
+
+You can use this object to access tab page windows. They have no methods and 
+no sequence or other interfaces.
+
+Tab page attributes are:
+    number      The tab page number like the one returned by 
+            |tabpagenr()|.
+    windows     Like |python-windows|, but for current tab page.
+    vars        The tab page |t:| variables.
+    window      Current tabpage window.
+    valid       True or False. Tab page object becomes invalid when 
+            corresponding tab page is closed.
+
+TabPage object type is available using "TabPage" attribute of vim module.
+
+### ===🗝 vim.bindeval objects
+
+==============================================================================
+7. vim.bindeval objects             *python-bindeval-objects*
+
+vim.Dictionary object               *python-Dictionary*
+    Dictionary-like object providing access to vim |Dictionary| type.
+    Attributes:
+        Attribute  Description ~
+        locked     One of                       *python-.locked*
+                    Value           Description ~
+                    zero            Variable is not locked
+                    vim.VAR_LOCKED  Variable is locked, but can be unlocked
+                    vim.VAR_FIXED   Variable is locked and can't be unlocked
+                   Read-write. You can unlock locked variable by assigning 
+                   `True` or `False` to this attribute. No recursive locking 
+                   is supported.
+        scope      One of
+                    Value              Description ~
+                    zero               Dictionary is not a scope one
+                    vim.VAR_DEF_SCOPE  |g:| or |l:| dictionary
+                    vim.VAR_SCOPE      Other scope dictionary,
+                                       see |internal-variables|
+    Methods (note: methods do not support keyword arguments):
+        Method      Description ~
+        keys()      Returns a list with dictionary keys.
+        values()    Returns a list with dictionary values.
+        items()     Returns a list of 2-tuples with dictionary contents.
+        update(iterable), update(dictionary), update(**kwargs)
+                    Adds keys to dictionary.
+        get(key[, default=None])
+                    Obtain key from dictionary, returning the default if it is 
+                    not present.
+        pop(key[, default])
+                    Remove specified key from dictionary and return 
+                    corresponding value. If key is not found and default is 
+                    given returns the default, otherwise raises KeyError.
+        popitem()
+                    Remove random key from dictionary and return (key, value) 
+                    pair.
+        has_key(key)
+                    Check whether dictionary contains specified key, similar 
+                    to `key in dict`.
+
+        __new__(), __new__(iterable), __new__(dictionary), __new__(update)
+                    You can use `vim.Dictionary()` to create new vim 
+                    dictionaries. `d=vim.Dictionary(arg)` is the same as 
+                    `d=vim.bindeval('{}');d.update(arg)`. Without arguments 
+                    constructs empty dictionary.
+
+    Examples: >
+        d = vim.Dictionary(food="bar")      # Constructor
+        d['a'] = 'b'                # Item assignment
+        print d['a']                # getting item
+        d.update({'c': 'd'})            # .update(dictionary)
+        d.update(e='f')             # .update(**kwargs)
+        d.update((('g', 'h'), ('i', 'j')))  # .update(iterable)
+        for key in d.keys():            # .keys()
+        for val in d.values():          # .values()
+        for key, val in d.items():      # .items()
+        print isinstance(d, vim.Dictionary) # True
+        for key in d:               # Iteration over keys
+        class Dict(vim.Dictionary):     # Subclassing
+<
+    Note: when iterating over keys you should not modify dictionary.
+
+vim.List object                 *python-List*
+    Sequence-like object providing access to vim |List| type.
+    Supports `.locked` attribute, see |python-.locked|. Also supports the 
+    following methods:
+        Method          Description ~
+        extend(item)    Add items to the list.
+
+        __new__(), __new__(iterable)
+                        You can use `vim.List()` to create new vim lists. 
+                        `l=vim.List(iterable)` is the same as 
+                        `l=vim.bindeval('[]');l.extend(iterable)`. Without 
+                        arguments constructs empty list.
+    Examples: >
+        l = vim.List("abc")     # Constructor, result: ['a', 'b', 'c']
+        l.extend(['abc', 'def'])    # .extend() method
+        print l[1:]         # slicing
+        l[:0] = ['ghi', 'jkl']      # slice assignment
+        print l[0]          # getting item
+        l[0] = 'mno'            # assignment
+        for i in l:         # iteration
+        print isinstance(l, vim.List)   # True
+        class List(vim.List):       # Subclassing
+
+vim.Function object             *python-Function*
+    Function-like object, acting like vim |Funcref| object. Accepts special 
+    keyword argument `self`, see |Dictionary-function|. You can also use 
+    `vim.Function(name)` constructor, it is the same as 
+    `vim.bindeval('function(%s)'%json.dumps(name))`.
+
+    Attributes (read-only):
+        Attribute    Description ~
+        name         Function name.
+        args         `None` or a |python-List| object with arguments.  Note 
+                     that this is a copy of the arguments list, constructed 
+                     each time you request this attribute. Modifications made 
+                     to the list will be ignored (but not to the containers 
+                     inside argument list: this is like |copy()| and not 
+                     |deepcopy()|).
+        self         `None` or a |python-Dictionary| object with self 
+                     dictionary. Note that explicit `self` keyword used when 
+                     calling resulting object overrides this attribute.
+        auto_rebind  Boolean. True if partial created from this Python object 
+                     and stored in the Vim script dictionary should be
+                     automatically rebound to the dictionary it is stored in
+                     when this dictionary is indexed. Exposes Vim internal
+                     difference between `dict.func` (auto_rebind=True) and
+                     `function(dict.func,dict)` (auto_rebind=False). This
+                     attribute makes no sense if `self` attribute is `None`.
+
+    Constructor additionally accepts `args`, `self` and `auto_rebind` 
+    keywords.  If `args` and/or `self` argument is given then it constructs 
+    a partial, see |function()|.  `auto_rebind` is only used when `self` 
+    argument is given, otherwise it is assumed to be `True` regardless of 
+    whether it was given or not.  If `self` is given then it defaults to 
+    `False`.
+
+    Examples: >
+        f = vim.Function('tr')          # Constructor
+        print f('abc', 'a', 'b')        # Calls tr('abc', 'a', 'b')
+        vim.command('''
+            function DictFun() dict
+                return self
+            endfunction
+        ''')
+        f = vim.bindeval('function("DictFun")')
+        print f(self={})            # Like call('DictFun', [], {})
+        print isinstance(f, vim.Function)   # True
+
+        p = vim.Function('DictFun', self={})
+        print f()
+        p = vim.Function('tr', args=['abc', 'a'])
+        print f('b')
+
+### ===🗝 pyeval() py3eval()
+
+==============================================================================
+8. pyeval() and py3eval() Vim functions         *python-pyeval*
+
+To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()| 
+functions to evaluate Python expressions and pass their values to Vim script.
+|pyxeval()| is also available.
+
+The Python value "None" is converted to v:none.
+
+### ===🗝 Dynamic loading
+
+==============================================================================
+9. Dynamic loading                  *python-dynamic*
+
+On MS-Windows and Unix the Python library can be loaded dynamically.  The
+|:version| output then includes |+python/dyn| or |+python3/dyn|.
+
+This means that Vim will search for the Python DLL or shared library file only
+when needed.  When you don't use the Python interface you don't need it, thus
+you can use Vim without this file.
+
+
+MS-Windows ~
+
+To use the Python interface the Python DLL must be in your search path.  In a
+console window type "path" to see what directories are used.  The 'pythondll'
+or 'pythonthreedll' option can be also used to specify the Python DLL.
+
+The name of the DLL should match the Python version Vim was compiled with.
+Currently the name for Python 2 is "python27.dll", that is for Python 2.7.
+That is the default value for 'pythondll'.  For Python 3 it is python36.dll
+(Python 3.6).  To know for sure edit "gvim.exe" and search for
+"python\d*.dll\c".
+
+
+Unix ~
+
+The 'pythondll' or 'pythonthreedll' option can be used to specify the Python
+shared library file instead of DYNAMIC_PYTHON_DLL or DYNAMIC_PYTHON3_DLL file
+what were specified at compile time.  The version of the shared library must
+match the Python 2.x or Python 3 version Vim was compiled with.
+
+### ===🗝 Python 3
+
+==============================================================================
+10. Python 3                        *python3*
+
+                            *:py3* *:python3*
+The `:py3` and `:python3` commands work similar to `:python`.  A simple check
+if the `:py3` command is working: >
+    :py3 print("Hello")
+
+To see what version of Python you have: >
+    :py3 import sys
+    :py3 print(sys.version)
+<                           *:py3file*
+The `:py3file` command works similar to `:pyfile`.
+                            *:py3do*
+The `:py3do` command works similar to `:pydo`.
+
+
+Vim can be built in four ways (:version output):
+1. No Python support        (-python, -python3)
+2. Python 2 support only    (+python or +python/dyn, -python3)
+3. Python 3 support only    (-python, +python3 or +python3/dyn)
+4. Python 2 and 3 support   (+python/dyn, +python3/dyn)
+
+Some more details on the special case 4:  *python-2-and-3*
+
+When Python 2 and Python 3 are both supported they must be loaded dynamically.
+
+When doing this on Linux/Unix systems and importing global symbols, this leads
+to a crash when the second Python version is used.  So either global symbols
+are loaded but only one Python version is activated, or no global symbols are
+loaded. The latter makes Python's "import" fail on libraries that expect the
+symbols to be provided by Vim.
+                            *E836* *E837*
+Vim's configuration script makes a guess for all libraries based on one
+standard Python library (termios).  If importing this library succeeds for
+both Python versions, then both will be made available in Vim at the same
+time.  If not, only the version first used in a session will be enabled.
+When trying to use the other one you will get the E836 or E837 error message.
+
+Here Vim's behavior depends on the system in which it was configured.  In a
+system where both versions of Python were configured with --enable-shared,
+both versions of Python will be activated at the same time.  There will still
+be problems with other third party libraries that were not linked to
+libPython.
+
+To work around such problems there are these options:
+1. The problematic library is recompiled to link to the according
+   libpython.so.
+2. Vim is recompiled for only one Python version.
+3. You undefine PY_NO_RTLD_GLOBAL in auto/config.h after configuration.  This
+   may crash Vim though.
+
+                            *E880*
+Raising SystemExit exception in python isn't endorsed way to quit vim, use: >
+    :py vim.command("qall!")
+<
+
+                            *has-python*
+You can test what Python version is available with: >
+    if has('python')
+      echo 'there is Python 2.x'
+    endif
+    if has('python3')
+      echo 'there is Python 3.x'
+    endif
+
+Note however, that when Python 2 and 3 are both available and loaded
+dynamically, these has() calls will try to load them.  If only one can be
+loaded at a time, just checking if Python 2 or 3 are available will prevent
+the other one from being available.
+
+To avoid loading the dynamic library, only check if Vim was compiled with
+python support: >
+    if has('python_compiled')
+      echo 'compiled with Python 2.x support'
+      if has('python_dynamic')
+        echo 'Python 2.x dynamically loaded'
+      endif
+    endif
+    if has('python3_compiled')
+      echo 'compiled with Python 3.x support'
+      if has('python3_dynamic')
+        echo 'Python 3.x dynamically loaded'
+      endif
+    endif
+
+This also tells you whether Python is dynamically loaded, which will fail if
+the runtime library cannot be found.
+
+### ===🗝 Python X
+
+==============================================================================
+11. Python X                        *python_x* *pythonx*
+
+Because most python code can be written so that it works with python 2.6+ and
+python 3 the pyx* functions and commands have been written.  They work exactly
+the same as the Python 2 and 3 variants, but select the Python version using
+the 'pyxversion' setting.
+
+You should set 'pyxversion' in your |.vimrc| to prefer Python 2 or Python 3
+for Python commands. If you change this setting at runtime you may risk that
+state of plugins (such as initialization) may be lost.
+
+If you want to use a module, you can put it in the {rtp}/pythonx directory.
+See |pythonx-directory|.
+
+                            *:pyx* *:pythonx*
+The `:pyx` and `:pythonx` commands work similar to `:python`.  A simple check
+if the `:pyx` command is working: >
+    :pyx print("Hello")
+
+To see what version of Python is being used: >
+    :pyx import sys
+    :pyx print(sys.version)
+<
+                    *:pyxfile* *python_x-special-comments*
+The `:pyxfile` command works similar to `:pyfile`.  However you can add one of
+these comments to force Vim using `:pyfile` or `:py3file`: >
+  #!/any string/python2     " Shebang. Must be the first line of the file.
+  #!/any string/python3     " Shebang. Must be the first line of the file.
+  # requires python 2.x     " Maximum lines depend on 'modelines'.
+  # requires python 3.x     " Maximum lines depend on 'modelines'.
+Unlike normal modelines, the bottom of the file is not checked.
+If none of them are found, the 'pyxversion' setting is used.
+                            *W20* *W21*
+If Vim does not support the selected Python version a silent message will be
+printed.  Use `:messages` to read them.
+
+                            *:pyxdo*
+The `:pyxdo` command works similar to `:pydo`.
+
+                            *has-pythonx*
+You can test if pyx* commands are available with: >
+    if has('pythonx')
+      echo 'pyx* commands are available. (Python ' . &pyx . ')'
+    endif
+
+When compiled with only one of |+python| or |+python3|, the has() returns 1.
+When compiled with both |+python| and |+python3|, the test depends on the
+'pyxversion' setting.  If 'pyxversion' is 0, it tests Python 3 first, and if
+it is not available then Python 2.  If 'pyxversion' is 2 or 3, it tests only
+Python 2 or 3 respectively.
+
+Note that for `has('pythonx')` to work it may try to dynamically load Python 3
+or 2.  This may have side effects, especially when Vim can only load one of
+the two.
+
+If a user prefers Python 2 and want to fallback to Python 3, he needs to set
+'pyxversion' explicitly in his |.vimrc|.  E.g.: >
+    if has('python')
+      set pyx=2
+    elseif has('python3')
+      set pyx=3
+    endif
+
+### ===🗝 Building with Python support
+
+==============================================================================
+12. Building with Python support            *python-building*
+
+A few hints for building with Python 2 or 3 support.
+
+UNIX
+
+See src/Makefile for how to enable including the Python interface.
+
+On Ubuntu you will want to install these packages for Python 2:
+    python
+    python-dev
+For Python 3:
+    python3
+    python3-dev
+For Python 3.6:
+    python3.6
+    python3.6-dev
+
+If you have more than one version of Python 3, you need to link python3 to the
+one you prefer, before running configure.
 
 
 ## ==⚡ User Commmands
@@ -3978,23 +5043,27 @@ Overview of which map command works in which mode.  More details below.
 ```sh
 " Vim Script
 "  Execute : F9 (Below code is used in .vimrc file)
-:autocmd FileType vim :nmap <F9> :echo "Execute %"<CR>:so % <Enter>
-:autocmd FileType vim :imap <F9> :echo "Execute %"<CR>:so % <Enter>
+:autocmd FileType vim :nmap <F9> :w \| echo "Source ".expand('%')<CR>:so % <Enter>
+:autocmd FileType vim :imap <F9> <Esc>:w \| echo "Source ".expand('%')<CR>:so % <Enter>
 
 " Bash script
 "  Execute : F9 (Below code is used in .vimrc file)
-:autocmd FileType sh :nmap <F9> :! clear <CR> :!echo Execute bash: % && bash % <CR>
-:autocmd FileType sh :imap <F9> :! clear <CR> :!echo Execute bash: % && bash % <CR>
+:autocmd FileType sh :nmap <F9> :w<CR>:!clear <CR> :! bash % <Enter>
+:autocmd FileType sh :imap <F9> <Esc>:w<CR>:!clear <CR> :! bash % <Enter>
 
 " python commands
 "  Execute : F9 (Below code is used in .vimrc file)
-:autocmd FileType python :nmap <F9> :! clear <CR> :! python % <CR>
+:autocmd FileType python :nmap <F9> :w<CR>:!clear <CR> :! python % <Enter>
 
 " C/C++ commands
 " Compile : F9 (Below code is used in .vimrc file)
-:autocmd FileType c,cpp :nmap <F9> :! rm -r out <CR> :! clear <CR> :! g++ % -o out <CR>
+:autocmd FileType c,cpp :nmap <F9> :! rm -r out <CR> :w<CR>:! g++ % -o out<CR>
 " Run : Ctrl+F9 (Below code is used in .vimrc file)
-:autocmd FileType c,cpp :nmap <C-F9> :! clear <CR> :! ./out <CR>
+if has('win32')
+  :autocmd FileType c,cpp :nmap <C-F9> :!clear <CR> :! .\out.exe<CR>
+else
+  :autocmd FileType c,cpp :nmap <C-F9> :!clear <CR> :! ./out <CR>
+endif
 ```
 
 Vim 自动化命令 :autocmd 非常强大，可以进行程序设置，根据不同的事件，如 *FileType* 来执行不同的命令，语法如下：
@@ -10185,11 +11254,159 @@ nmap ga <Plug>(EasyAlign)
     | queues     | Fixnum  | 1       | number of concurrent queues                    |
     ..
 
+### ===🗝 Tabular
+- https://github.com/godlygeek/tabular
+- http://vimcasts.org/episodes/aligning-text-with-tabular-vim/
+
+Sometimes, it's useful to line up text. Naturally, it's nicer to have the computer do this for you, since aligning things by hand quickly becomes unpleasant. While there are other plugins for aligning text, the ones I've tried are either impossibly difficult to understand and use, or too simplistic to handle complicated tasks. This plugin aims to make the easy things easy and the hard things possible, without providing an unnecessarily obtuse interface. It's still a work in progress, and criticisms are welcome.
+
+See Aligning Text with Tabular.vim for a screencast that shows how Tabular.vim works.
+
+See doc/Tabular.txt for detailed documentation.
+
+A format specifier is either l, r, or c, followed by one or more digits.  If
+the letter is l, the field will be left aligned, similarly for r and right
+aligning and c and center aligning.  The number following the letter is the
+number of spaces padding to insert before the start of the next field.
+Multiple format specifiers can be added to the same command - each field will
+be printed with the next format specifier in the list; when they all have been
+used the first will be used again, and so on.  So, the last command right
+aligned every field, then inserted 0 spaces of padding before the next field.
+What if we wanted to right align the text before the comma, and left align the
+text after the comma?  The command would look like this:
+>
+  :Tabularize /,/r1c1l0
+
+            Some short phrase , some other phrase
+    A much longer phrase here , and another long phrase
+
+Aligning assignments Before:
+
+    one = 1
+    two = 2
+    three = 3
+    four = 4
+
+Running :Tab /= produces:
+
+    one   = 1
+    two   = 2
+    three = 3
+    four  = 4
+
+Colon assignmentsThere are a couple of different ways that colon assignments could be aligned. If we start with an example that is not aligned:
+
+```js
+var video = {
+    metadata: {
+        title: "Aligning assignments"
+        h264Src: "/media/alignment.mov",
+        oggSrc: "/media/alignment.ogv"
+        posterSrc: "/media/alignment.png"
+        duration: 320,
+    }
+}
+```
+
+Select the inner block by positioning your cursor inside it and running vi} (enable Visual mode, and select inner Brace). Then you could run :Tab/: which would produce this result:
+
+```js
+var video = {
+    metadata: {
+        title     : "Aligning assignments"
+        h264Src   : "/media/alignment.mov",
+        oggSrc    : "/media/alignment.ogv"
+        posterSrc : "/media/alignment.png"
+        duration  : 320,
+    }
+}
+```
+
+If you don’t like stacking the colons in a column, you could use the \zs atom to exclude the : character from the search match. Running :Tab /:\zs produces this result:
+
+```js
+var video = {
+    metadata: {
+        title:      "Aligning assignments"
+        h264Src:    "/media/alignment.mov",
+        oggSrc:     "/media/alignment.ogv"
+        posterSrc:  "/media/alignment.png"
+        duration:   320,
+    }
+}
+```
+
+Be aware that if you work in a team, there may be a house style that you should follow.Table markupHere is a scenario outline for cucumber steps, including a pipe-delimited table of examples:
+
+    Scenario Outline: eating
+      Given there are &lt;start&gt; cucumbers
+      When I eat &lt;eat&gt; cucumbers
+      Then I should have &lt;left&gt; cucumbers
+
+      Examples:
+        |start|eat|left|
+        |12|5|7|
+        |20|5|15|
+
+With the cursor positioned anywhere in the table, running :Tab/| produces:
+
+    Scenario Outline: eating
+      Given there are &lt;start&gt; cucumbers
+      When I eat &lt;eat&gt; cucumbers
+      Then I should have &lt;left&gt; cucumbers
+
+      Examples:
+        | start | eat | left |
+        | 12    | 5   | 7    |
+        | 20    | 5   | 15   |
+
+Creating mappingsIf you find yourself using a particular token for alignment often, then you might want to save yourself a few keystrokes by creating mappings for normal and visual modes. Here are a few suggestions to get you started:
+
+    let mapleader=','
+    if exists(":Tabularize")
+      nmap <Leader>a= :Tabularize /=<CR>
+      vmap <Leader>a= :Tabularize /=<CR>
+      nmap <Leader>a: :Tabularize /:\zs<CR>
+      vmap <Leader>a: :Tabularize /:\zs<CR>
+    endif
+
+If you were in normal or visual mode, you could type ,a= to align equals signs. In visual mode, the alignment would apply to the selected lines, but in normal mode tabular would attempt to guess the range.You could take it a step further, by creating an insert mode mapping to trigger the :Tabular command when you type the character that you want to align. Tim Pope shows us how in this gist:
+
+    inoremap <silent> <Bar>   <Bar><Esc>:call <SID>align()<CR>a
+
+    function! s:align()
+      let p = '^\s*|\s.*\s|\s*$'
+      if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
+        let column = strlen(substitute(getline('.')[0:col('.')],'[^|]','','g'))
+        let position = strlen(matchstr(getline('.')[0:col('.')],'.*|\s*\zs.*'))
+        Tabularize/|/l1
+        normal! 0
+        call search(repeat('[^|]*|',column).'\s\{-\}'.repeat('.',position),'ce',line('.'))
+      endif
+    endfunction
+
+If you put this in your vimrc file, then it will call the :Tabularize command each time you insert a | character.
+
+Further reading
+
+   1. the Tabular plugin
+   2. :help /\zs - Vim’s zero-width ‘pattern start’ search atom
+   3. :help /\@<= - Vim also has a ‘positive lookbehind’ assertion
+   4. Tim Pope’s insert mode cucumber alignment gist
+   5. Align.vim by Charles Campbell - another fine alignment plugin
+
 
 ### ===🗝 Popup Menu
 - https://github.com/dzhou121/gonvim
-- https://github.com/powerline/fonts
 - https://github.com/neovim/neovim/wiki/Related-projects#gui
+- https://github.com/akiyosi/goneovim
+- [Lightning-fast and Powerful Code Editor written in Rust](https://github.com/lapce/lapce)
+
+Neovim GUI written in Golang, using a [Golang qt backend](https://github.com/therecipe/qt)
+`Downloads:` Pre-built packages for Windows, macOS, and Linux are found at the [Releases](https://github.com/dzhou121/gonvim/releases/) page.
+
+`Requirements:` [Neovim](https://github.com/neovim/neovim) (v0.2)
+
 
 
 ### ===🗝 Airline or Powerline - Tab Bar/Status Bar
@@ -10201,14 +11418,180 @@ nmap ga <Plug>(EasyAlign)
 - https://www.alexwhittemore.com/gvim-with-powerline-on-windows-8-64bit/
 - https://www.ricalo.com/blog/install-powerline-windows/
 
+状态条插件的内容有三个部分：
+
+   - 字体文件的介绍，以及安装与使用；
+   - Vim-Airline 和 Vim-Powerline 的差别；
+   - Vim-Airline 和 Vim-Powerline 安装与配置；
+
+使用 Windows Terminal 终端应用，Set the shell's title
+- https://docs.microsoft.com/en-us/windows/terminal/tutorials/tab-title
+
+|   Shell    |                 Command                  |
+|------------|------------------------------------------|
+| PowerShell | $Host.UI.RawUI.WindowTitle = "New Title" |
+| Command    | Prompt  TITLE "New Title"                |
+| bash*      | echo -ne "\033]0;New Title\a"            |
+
 Vim-Airline 和 Vim-Powerline 都是非常棒棒的状态条、标签块插件，可优化 Vim 原有的 Tab 有点混乱的状。
 
-作为更早期的插件，Powerline 使用 Python 脚本开发，不仅支持 Vim，看起来块头更大。
+作为更早期的插件，Powerline 使用 Python 脚本开发，不仅支持 Vim，看起来块头更大。并且在 Vim 配置上也更显异类，并且混乱，需要有一定的 Python 配置能力和 Vim 脚本接口扩展知识。
 
-在 Vim 配置脚本中测试当前环境是否对 Python 3.x 的支持：
+另外，因为 Powerline 使用更好看箭头，需要安装额外的 Arimo for Powerline 字体。只在 Windows WSL 系统上安装，Windows Terminal 上并没有效果，并且很卡顿体验不够好：
+
+    sudo apt install --yes powerline
+    sudo apt-get install fonts-powerline
+
+在 Windows 上的 NeoVim 中也出现了错误：
+
+    AttributeError: 'LegacyVim' object has no attribute 'bindeval'
+
+安装字体注意，因为在 Windows WSL 环境下使用 Vim，控制台是在宿主系统上执行的，字体就要安装在宿主系统上。因为 Windows Terminal 运行在宿主系统上，WSL 是子系统，字体应该在宿主机上安装。
+
+字体特点介绍如，按紧凑度升序：
+
+|               字体               |                                特点                   
+|----------------------------------|-----------------------------------------------------
+| Space Mono for Powerline         | 结构相当稀疏，画面整洁几乎接收空旷，对中文支持较好。
+| JetBrains Mono Thin              | 结构相当稀疏，看起来画面很，对中文支持较好。
+| Source Code Pro for Powerline    | 行间结构较稀疏，看起来画面很，对中文支持较好。
+| Roboto Mono for Powerline        | 行间结构较稀疏，Thin/Light/Medium 样式设置到 for 字之前。
+| Fira Mono for Powerline          | 画面比较平衡，内容紧凑但不会拥挤，中文支持很好。
+| Fira Code                        | 画面比较平衡，内容紧凑但不会拥挤，Unicode 支持很好，连字很优秀。
+| Cousine for Powerline            | 行间结构平衡，但字间比较宽，画面比 Ubuntu Mono 要整洁。
+| Hack                             | 画面比较平衡，内容紧凑但不会拥挤，中文支持很好。
+| Cascadia Code/Mono               | 画面比较平衡，笔画丰满、紧凑但相当整洁，中文支持很好。
+| Inconsolata for Powerline        | 拉丁字母非常好看，苗条，内容更紧凑，中文支持不好，大小粗细不一致。
+| Anonymice Powerline              | 结构也属于密集的，但看画面比 Ubuntu Mono 要整洁。
+| Ubuntu Mono derivative Powerline | 行间结构密集，看起来画面很拥挤，同时也表示可以显示更多内容。
+
+
+Cascadia Code、Fira Code、JetBrains Mono 三款字体均支持连字，>= <= => -> != <> 这类两字并作一格，也均有非连字版本，字体均强调了 'l' 的辨识度。
+
+- [Arimo for Powerline](https://github.com/powerline/fonts)
+- [Cascadia Code](https://github.com/microsoft/cascadia-code/releases)
+- [Fira Code](https://github.com/tonsky/FiraCode/releases)
+- [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono/releases)
+- [Sarasa Gothic 更纱黑体](https://github.com/be5invis/Sarasa-Gothic)
+
+各字体的变体：
+
+| Fira Code |   JetBrains Mono  | Cascadia Code/Mono | Arimo for PL |  Source Code Pro  |  Space Mono |
+|-----------|-------------------|--------------------|--------------|-------------------|-------------|
+| Bold      | Bold              | Bold               | Normal       | Black             | Bold        |
+| SemiBold  | BoldItalic        | Bold Italic        | Bold         | Black Italic      | Bold Italic |
+| Medium    | ExtraBold         | ExtraLight         | Bold Italic  | Bold              | Italic      |
+| Regular   | ExtraBoldItalic   | ExtraLight Italic  | Italic       | Bold Italic       | Regular     |
+| Light     | SemiBold          | Italic             |              | Semibold Italic   |             |
+| Retina    | SemiBoldItalic    | Light              |              | Semibold          |             |
+|           | Medium            | Light Italic       |              | Medium            |             |
+|           | Medium Italic     | Regular            |              | Medium Italic     |             |
+|           | Regular           | SemiBold           |              | Light             |             |
+|           | Light             | SemiBold Italic    |              | Light Italic      |             |
+|           | Light Italic      | SemiLight          |              | ExtraLight        |             |
+|           | ExtraLight        | SemiLight Italic   |              | ExtraLight Italic |             |
+|           | ExtraLight Italic |                    |              | Italic            |             |
+|           | Thin              |                    |              |                   |             |
+|           | ThinItalic        |                    |              |                   |             |
+|           | Italic            |                    |              |                   |             |
+
+Fira Code 是 Mozilla 公司主推的字体系列，专为写程序设计的字体。出来具有等宽等基本属性外，还加入了编程连字特性（ligatures），这点做得非常好，并且对视网膜高清屏有支持，有 Retina 变体。
+
+Fira Code 就是利用这个特性对编程中的常用符号进行优化，比如把输入的「!=」直接显示成 「≠」 或者把 「>=」 变成 「≥ 」 等等，以此来提高代码的可读性。并且 1liIoOpP0 这此字符辨识度极高。
+
+Fira Code 对 Unicode 字符集支持度还非常高，其中 Medium 变体中文有粗线不一问题；
+
+   1. Fixed height of ∑ U+2211 N-ARY SUMMATION #1083
+   2. Added U+2241..U+224B ≁ ≂ ≃ ≄ ≅ ≆ ≇ ≉ ≊ ≋ #1090
+   3. Added new enclosed characters from Unicode 13 U+0229C ⊜, U+1F10D 🄍, U+1F10E 🄎, U+1F10F 🄏, U+1F16D 🅭, U+1F16E 🅮, U+1F16F 🅯, U+1F1AD 🆭 #1070
+   4. Redrew U+27F0..U+27FF Supplemental Arrows-A to be strict monospace ⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿ #1109 #1123
+   5. Added U+220E End of Proof ∎ #1115
+   6. Added U+FFFD Replacement Character � #1137, thanks @gjvnq
+   7. Added U+EE00..U+EE0B Progress Bar  #1182
+   8. Added U+2237 Propotion ∷ #1219
+   9. Added U+21AA Rightwards Arrow with Hook ↪ #1307
+
+更纱黑体是一种中文编程字体，包含以下样式：
+
+   - Sarasa Gothic / 更纱黑体：基于Inter，全宽引号
+   - Sarasa UI / 更纱黑体 UI：基于Inter，窄引号
+
+以下 PowerSHell 脚本供参考，可以直接下载 Powerline 字包，解压后执行安装脚本，它会执行 Windows 字体安装程序，将字体安装到 Windows Fonts 目录下：
 
 ```sh
-" Python 3.x Test for Powerline in .vimrc
+$url = "https://github.com/powerline/fonts/archive/master.zip"
+powershell -command "& { iwr $url -OutFile ~\fonts.zip }"
+Expand-Archive -Path ~\fonts.zip -DestinationPath ~
+~\fonts-master\install.ps1
+```
+
+另一个替代选择是微软的 Cascadia Code 字体，它支持 Powerline Glyph。Windows Terminal 要使用此字体，需要修改属性，或者直接修改配置文件 settings.json，通过 Ctrl-Shift-P 打开 Open Settings file，或设置 Open settings ⇨ PowerShell ⇨ Apperance ⇨ Text ⇨ Font Face 指定：
+
+```json
+{
+    "profiles" : {
+    "list": 
+    [
+        {
+            "commandline" : "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+            "fontFace" : "Cascadia Mono PL",
+            // ...
+        }
+    ]
+}
+```
+
+Cascadia Code 字体包内含有 OTF\TTF\WOFF2 三种格式，通常选择其中 TTF 格式安装。WOFF2 这种格式在网页上应用很常见，因为它体积更小。选择其中一个字体文件，双击打开字体浏览程序安装，或者多选通过右键菜单批量安装。
+
+另外，字体包中还提供了 static 目录下的字体文件，这部分是静态字体，在 Variable 字体不支持的情况可以使用，一般都是使用可变形字体。变体字的好处就是包含了 Thin/Light/Medium/Bold 等变体字形，使用起来比较方便。Cascadia Code 目前有四个组合变体，主要是 Code 和 Mono 两种，后者是等宽不连字，PL 表示 PowerLine。
+
+Cascadia Code 是 Microsoft 提供的一种新的等宽字体，可为命令行应用程序和文本编辑器提供全新的体验。 Cascadia Code 是与 Windows 终端一起开发的。 建议将此字体与终端应用程序和文本编辑器（如 Visual Studio 和 Visual Studio Code）一起使用。
+
+Cascadia Code is a purpose-built monospaced TrueType font for Windows Terminal, the new command-line interface for Microsoft Windows. It includes programming ligatures and was designed to enhance the look and feel of Windows Terminal, terminal applications and text editors such as Visual Studio and Visual Studio Code. The font is open source under the SIL Open Font License and available on GitHub. 
+
+Windows 终端在其包中提供 Cascadia Code 和 Cascadia Mono，字体信息如下：
+
+|     字体名称      | 包括连字 | Powerline 字形 |
+|------------------|----------|----------------|
+| Cascadia Code    | 是       | 否             |
+| Cascadia Mono    | 否       | 否             |
+| Cascadia Code PL | 是       | 是             |
+| Cascadia Mono PL | 否       | 是             |
+
+Font Variants
+
+   1. Cascadia Code: standard version of Cascadia
+   2. Cascadia Mono: a version of Cascadia that doesn't have ligatures
+   3. Cascadia (Code|Mono) PL: a version of Cascadia that has embedded Powerline symbols
+
+| Font formats |                                 Notes                                  |
+|--------------|------------------------------------------------------------------------|
+| ttf variable | Recommend this version for all users, and particularly those           |
+|              | on Windows or any other OS that employs TrueType hinting. It offers    |
+|              | the greatest diversity of weight options (anything from 200-700).      |
+|--------------|------------------------------------------------------------------------|
+| ttf static   | In the rare situation where the above variable font version is         |
+|              | not supported, or a singular weight is preferred to the entire range,  |
+|              | static formats are supplied. However, please note they do not have     |
+|              | the same degree of hinting quality as the variable font versions.      |
+|--------------|------------------------------------------------------------------------|
+| otf static   | For users who prefer OTF format fonts, otf static instances            |
+|              | are provided. At this time we do not have a variable font OTF version. |
+|--------------|------------------------------------------------------------------------|
+| WOFF2        | These versions are provided for the purposes of web use,               |
+|              | and are available both as variable fonts, and static instances.        |
+
+目前，Vim-Powerline 已经停止更新，并转向 Powerline 项目。
+
+在 Vim 配置脚本中测试当前环境是否对 Python 3.x 的支持。
+
+配置上需要 Python 基础，需要使用 `pip` 和 `setuptools` 包安装工具，并且对 Windows 系统支持还不好，PowerShell 脚本也没提供。
+
+```sh
+"" # Config vim-powerline for Vim-Plug
+Plug 'Lokaltog/vim-powerline'
+
+"" # Powerline in .vimrc, Test for Python 3.x 
 if has('python3')
   python3 import sys
   python3 print('Python',sys.version)
@@ -10226,41 +11609,26 @@ if has('python3')
 endif
 ```
 
-To start using Powerline with Vim, all we have to do is to add some lines in our .vimrc configuration file. In this example I suppose support for Python3 exists; if using Python2, just change the interpreter name accordingly:
+1. Install Python 3.2+, Python 2.6+ or PyPy and ``pip`` with ``setuptools``. 
+   This step is distribution-specific, so no commands provided.
+2. Install Powerline using one of the following commands:
 
-Once the above content is written in the `~/.vimrc` file, to make the changes effective we can either close and re-open Vim, or just re-source the configuration file by entering the editor command mode (:) and launching the following command:
+      pip install --user powerline-status
 
-    :so ~/.vimrc
+   will get the latest release version and
 
-If we open Vim we and load the new configuration, at this point we probably don’t see anything new, why? This behavior is expected since by default the status bar is displayed only if at least two windows exist. 
+      pip install --user git+https://github.com/powerline/powerline
 
+   will get the latest development version.
 
-目前，Vim-Powerline 已经停止更新，并转向 Powerline 项目。
+   .. note:: Due to the naming conflict with an unrelated project powerline is
+      named ``powerline-status`` in PyPI.
 
-配置上需要 Python 基础，需要使用 `pip` 和 `setuptools` 包安装工具，并且对 Windows 系统支持还不好，PowerShell 脚本也没提供。
-
-    1. Install Python 3.2+, Python 2.6+ or PyPy and ``pip`` with ``setuptools``. 
-       This step is distribution-specific, so no commands provided.
-    2. Install Powerline using one of the following commands:
-
-          pip install --user powerline-status
-
-       will get the latest release version and
-
-          pip install --user git+https://github.com/powerline/powerline
-
-       will get the latest development version.
-
-       .. note:: Due to the naming conflict with an unrelated project powerline is
-          named ``powerline-status`` in PyPI.
-
-       .. note::
-          Powerline developers should be aware that``pip install --editable`` does 
-          not currently fully work. Installation performed this way are missing 
-          ``powerline`` executable that needs to be symlinked. It will be located in 
-          ``scripts/powerline``.
-
-Vim-Powerline Plugin is currently in maintenance mode, no feature requests will be accepted. Vim-powerline will be deprecated in favour of https://github.com/Lokaltog/powerline once it is ready.
+   .. note::
+      Powerline developers should be aware that``pip install --editable`` does 
+      not currently fully work. Installation performed this way are missing 
+      ``powerline`` executable that needs to be symlinked. It will be located in 
+      ``scripts/powerline``.
 
 Basic powerline configuration is done via `JSON` files located at `.config/powerline/`. It is a good idea to start by copying the default configuration located at `powerline_root/powerline/config_files/` to `.config/powerline/`.
 
@@ -10277,6 +11645,40 @@ Plugin 'vim-airline/vim-airline-themes'
 "" # Install the themes as you would this plugin (Vim-Plug example):
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+
+"" # https://github.com/vim-airline/vim-airline/issues/1291
+let g:airline_powerline_fonts=1
+set guifont=Space\ Mono\ for\ Powerline:h7.5:w4.5
+"" # set guifont=Inconsolata\ for\ Powerline:h7.5:w4.5
+"" # set guifont=Cascadia\ Mono\ PL:h7.5:w4.5
+"" # set guifont=Arimo\ for\ Powerline:h7.5:w4.5
+"" # set guifont=Arimo\ Italic\ for\ Powerline:h7.5:w4.5
+```
+
+可以在 Airline 中使用 Powerline 的好看字体，通过 g:airline_powerline_font 全局变量启用。
+
+图形界面字体还可以通过 guifont 选项设置，格式参考 :help guifont。
+
+
+```sh
+"" # Colorful abcdefgh
+"" # https://github.com/vim-airline/vim-airline/issues/299#issuecomment-25772886
+function! AccentDemo()
+  let keys = ['a','b','c','d','e','f','g','h']
+  for k in keys
+    call airline#parts#define_text(k, k)
+  endfor
+  call airline#parts#define_accent('a', 'red')
+  call airline#parts#define_accent('b', 'green')
+  call airline#parts#define_accent('c', 'blue')
+  call airline#parts#define_accent('d', 'yellow')
+  call airline#parts#define_accent('e', 'orange')
+  call airline#parts#define_accent('f', 'purple')
+  call airline#parts#define_accent('g', 'bold')
+  call airline#parts#define_accent('h', 'italic')
+  let g:airline_section_a = airline#section#create(keys)
+endfunction
+autocmd VimEnter * call AccentDemo()
 ```
 
 以 Vim-Plug 为例，修改 .vimrc 配置文件后，通过 :PlugStatus 查询插件状态，通过 :PlugInstall 安装插件。
@@ -10295,25 +11697,23 @@ bottom of each vim window.
 That line consists of several sections, each one displaying some piece of
 information. By default (without configuration) this line will look like this:
 
-```
-+-----------------------------------------------------------------------------+
-|~                                                                            |
-|~                                                                            |
-|~                     VIM - Vi IMproved                                      |
-|~                                                                            |
-|~                       version 8.2                                          |
-|~                    by Bram Moolenaar et al.                                |
-|~           Vim is open source and freely distributable                      |
-|~                                                                            |
-|~           type :h :q<Enter>          to exit                               |
-|~           type :help<Enter> or <F1>  for on-line help                      |
-|~           type :help version8<Enter> for version info                      |
-|~                                                                            |
-|~                                                                            |
-+-----------------------------------------------------------------------------+
-| A | B |                     C                            X | Y | Z |  [...] |
-+-----------------------------------------------------------------------------+
-```
+    +-----------------------------------------------------------------------------+
+    |~                                                                            |
+    |~                                                                            |
+    |~                     VIM - Vi IMproved                                      |
+    |~                                                                            |
+    |~                       version 8.2                                          |
+    |~                    by Bram Moolenaar et al.                                |
+    |~           Vim is open source and freely distributable                      |
+    |~                                                                            |
+    |~           type :h :q<Enter>          to exit                               |
+    |~           type :help<Enter> or <F1>  for on-line help                      |
+    |~           type :help version8<Enter> for version info                      |
+    |~                                                                            |
+    |~                                                                            |
+    +-----------------------------------------------------------------------------+
+    | A | B |                     C                            X | Y | Z |  [...] |
+    +-----------------------------------------------------------------------------+
 
 The statusline is the colored line at the bottom, which contains the sections
 (possibly in different colors):
@@ -10361,6 +11761,354 @@ For a better look, those sections can be colored differently, depending on vario
 *  Unit testing suite.
 
 
+
+
+### ===🗝 Tagbar
+- https://github.com/preservim/tagbar
+- http://ctags.sourceforge.net/
+
+Tagbar: a class outline viewer for Vim
+Vint Check
+
+What Tagbar is
+Tagbar is a Vim plugin that provides an easy way to browse the tags of the current file and get an overview of its structure. It does this by creating a sidebar that displays the ctags-generated tags of the current file, ordered by their scope. This means that for example methods in C++ are displayed under the class they are defined in.
+
+What Tagbar is not
+Tagbar is not a general-purpose tool for managing tags files. It only creates the tags it needs on-the-fly in-memory without creating any files. tags file management is provided by other plugins, like for example easytags.
+
+Extract the archive or clone the repository into a directory in your 'runtimepath', or use a plugin manager of your choice like pathogen. Don't forget to run :helptags if your plugin manager doesn't do it for you so you can access the documentation with :help tagbar.
+
+If the ctags executable is not installed in one of the directories in your $PATH environment variable you have to set the g:tagbar_ctags_bin variable, see the documentation for more info.
+
+
+Quickstart
+
+Put something like the following into your `~/.vimrc`:
+
+    nmap <F8> :TagbarToggle<CR>
+
+If you do this the F8 key will toggle the Tagbar window. You can of course use any shortcut you want. For more flexible ways to open and close the window (and the rest of the functionality) see the documentation using :help tagbar.
+
+
+### ===🗝 LaTeX MathJax MathML AsciiMath
+- [EqnEditor](https://editor.codecogs.com/)
+- [LatexLive Editor](https://latexlive.com/)
+- [Python-Markdown Parser]: https://github.com/Python-Markdown/markdown
+- [MathJax Documentation](https://docs.mathjax.org/en/latest/index.html)
+- [MathJax Web Demos Repository](https://github.com/mathjax/MathJax-demos-web)
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"> </script>
+
+Math can be displayed in the browser using MathJax or Katex. The feature can be enabled by correctly configuring the `"js"`, `"css"`, and `"markdown_extensions"` configuration fields. This allows for inline math to be included \\(\frac{\pi}{2}\\) $\pi$.
+
+Alternatively, math can be written on its own line:
+
+$$F(\omega) = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty} f(t) \, e^{ - i \omega t}dt$$
+
+\\[\int_0^1 f(t) \mathrm{d}t\\]
+
+\\[\sum_j \gamma_j^2/d_j\\]
+
+\\[\S_{j \gamma_j^2/d_j}\\]
+
+
+Here is a complete sample page containing TeX mathematics (see the MathJax Web Demos Repository for more).
+
+```py
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MathJax example</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+</head>
+<body>
+<p>
+  When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are
+  \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\]
+</p>
+</body>
+</html>
+```
+
+一元二次方程：
+
+<p>When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are \[x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\]</p>
+
+向量
+
+$$|x|, ||v|| \quad\longrightarrow\quad \lvert x\rvert, \lVert v\rVert$$
+
+
+引用符号
+
+$$♠\quad♡\quad♢\quad♣\\ ♤\quad♥\quad♦\quad♧ $$
+
+Limits
+
+$$\lim \limits_{x \to 1} \frac{x^2-1}{x-1}$$
+
+
+GitHub Page 里的 Jekyll 虽然支持 Markdown，但是不能正确显示公式，可以借用 MathJax 帮助渲染。
+
+方法：
+
+1 设置 markdown 引擎为 kramdown，方法为在 `_config.yml` 里添加：
+
+markdown: kramdown
+
+2 在 md 文件开始输入代码：
+
+    <head>
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                tex2jax: {
+                skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                inlineMath: [['$','$']]
+                }
+            });
+        </script>
+    </head>
+
+然后正文就可以写公式：$ e = m c^2 $ 这样就能正确显示了。
+
+如果要所有文档都使用 mathjax，可以在主题配置文件里面的 `<head>`标签里加入上面代码，但是实际测试发现，每次都会连接mathjax所以加载页面很慢。因此建议对需要公式显示的文档开启。
+
+如果是在 Gtihub Page 搭建的时候选择的主题，仓库里看不到主题配置文件可以这样做：
+
+    https://github.com/pages-themes
+
+把 THEME_NAME 替换为自己的主题名字，比如我的主题名字为 Cayman，然后把这个文件的内容添加到自己仓库里面的 `_layout/default.html`。
+
+在`<head>`标签里添加上面的内容，就可以全部文档都使用了。
+
+
+
+### ===🗝 Markdown
+- https://github.com/preservim/vim-markdown
+- https://github.com/plasticboy/vim-markdown
+- https://github.com/tpope/vim-markdown
+- [Vim markdown.vim](runtime/syntax/markdown.vim)
+- [NeoVim Markdown Preview](https://github.com/iamcco/markdown-preview.nvim)
+- [Vim Markdown Preview](https://github.com/iamcco/markdown-preview.vim)
+- [Minimd : A fast, folding Markdown outliner](https://www.vim.org/scripts/script.php?script_id=5958)
+
+目前 plasticboy 迁移到 preservim 账户项目上，克隆时会自动选择后者。
+
+With vim-plug:
+
+Add Plug 'iamcco/markdown-preview.vim' to the vimrc or init.vim file and type :PlugInstall.
+
+Or with MathJax support for typesetting math:
+
+    Plug 'iamcco/mathjax-support-for-mkdp'
+    Plug 'iamcco/markdown-preview.vim'
+
+Usage
+Command:
+
+    MarkdownPreview
+    " Open preview window in markdown buffer
+
+    MarkdownPreviewStop
+    " Close the preview window and server
+
+
+If you use Vundle, add the following lines to your `~/.vimrc`:
+
+    Plugin 'godlygeek/tabular'
+    Plugin 'preservim/vim-markdown'
+
+The tabular plugin must come before vim-markdown.
+
+Then run inside Vim:
+
+    :so ~/.vimrc
+    :PluginInstall
+
+The following commands are useful to open and close folds:
+
+   1. zr: reduces fold level throughout the buffer
+   2. zR: opens all folds
+   3. zm: increases fold level throughout the buffer
+   4. zM: folds everything all the way
+   5. za: open a fold your cursor is on
+   6. zA: open a fold your cursor is on recursively
+   7. zc: close a fold your cursor is on
+   8. zC: close a fold your cursor is on recursively
+
+配置 `~/.vimrc` 增加 Markdown 插件选项：
+
+    "不折叠显示，默认是折叠显示
+    let g:vim_markdown_folding_disabled = 1
+    let g:vim_markdown_override_foldtext = 0
+
+    "可折叠的级数，对应md的标题级别
+    let g:vim_markdown_folding_level = 6
+    let g:vim_markdown_no_default_key_mappings = 1
+    let g:vim_markdown_emphasis_multiline = 0
+    set conceallevel=2
+    let g:vim_markdown_frontmatter=1
+    syntax on
+
+可用命令：
+
+- :Toc 
+- :Toch 
+- :Toct 
+- :Tocv
+
+### ===🗝 fugitive - Git Integration
+- https://github.com/tpope/vim-fugitive
+- http://vimcasts.org/episodes/fugitive-vim---a-complement-to-command-line-git/
+- https://github.com/junegunn/vim-github-dashboard
+
+Want to perform basic git commands without leaving the comfort of VIM? Then vim-fugitive is the way to go:
+
+    Plugin 'tpope/vim-fugitive'
+
+The fugitive plugin, by Tim Pope, is a git wrapper for Vim. It complements the command line interface to git, but doesn’t aim to replace it. In this episode, we’ll see how some of fugitive’s commands can streamline your workflow.
+
+This is the first of a five part series on fugitive.
+
+Using the :Git command, you can run any arbitrary git command from inside Vim. I prefer to switch to the shell for anything that generates a log of output, such as git log for example. But commands that generate little or no output are fair game for running from inside Vim (:Git checkout -b experimental for example).At Vim’s command line, the % symbol has a special meaning: it expands to the full path of the current file. You can use this to run any git command that expects a filepath as an argument, making the command act on the current file. But fugitive also provides a few convenience methods, some of which are summarized in this table:
+
+|       git       | fugitive |                          action                          |
+|-----------------|----------|----------------------------------------------------------|
+| :Git add %      | :Gwrite  | Stage the current file to the index                      |
+| :Git checkout % | :Gread   | Revert current file to last checked in version           |
+| :Git rm %       | :Gremove | Delete the current file and the corresponding Vim buffer |
+| :Git mv %       | :Gmove   | Rename the current file and the corresponding Vim buffer |
+
+The :Gcommit command opens up a commit window in a split window. One advantage to using this, rather than running git commit in the shell, is that you can use Vim’s keyword autocompletion when composing your commit message.The :Gblame command opens a vertically split window containing annotations for each line of the file: the last commit reference, with author and timestamp. The split windows are bound, so that when you scroll one, the other window will follow.
+
+Further Reading
+
+    :help cmdline-special
+    :help :_%
+    ctlr-n/ctrl-p keyword autocompletion
+    :help 'complete'
+    :help :Git
+    :help :Gwrite
+    :help :Gread
+    :help :Gremove
+    :help :Gmove
+    :help :Gcommit
+    :help :Gblame
+
+
+### ===🗝 Vimgo
+- https://github.com/fatih/vim-go
+
+This plugin adds Go language support for Vim, with the following main features:
+
+   1. Compile your package with :GoBuild, install it with :GoInstall or test it with :GoTest. Run a single test with :GoTestFunc).
+   2. Quickly execute your current file(s) with :GoRun.
+   3. Improved syntax highlighting and folding.
+   4. Debug programs with integrated delve support with :GoDebugStart.
+   5. Completion and many other features support via gopls.
+   6. formatting on save keeps the cursor position and undo history.
+   7. Go to symbol/declaration with :GoDef.
+   8. Look up documentation with :GoDoc or :GoDocBrowser.
+   9. Easily import packages via :GoImport, remove them via :GoDrop.
+   10. Precise type-safe renaming of identifiers with :GoRename.
+   11. See which code is covered by tests with :GoCoverage.
+   12. Add or remove tags on struct fields with :GoAddTags and :GoRemoveTags.
+   13. Call staticcheck with :GoMetaLinter to invoke all possible linters (e.g. golint, vet, errcheck, deadcode, etc.) and put the result in the quickfix or location list.
+   14. Lint your code with :GoLint, run your code through :GoVet to catch static errors, or make sure errors are checked with :GoErrCheck.
+   15. Advanced source analysis tools utilizing guru, such as :GoImplements, :GoCallees, and :GoReferrers.
+   16. ... and many more! Please see doc/vim-go.txt for more information.
+   17. Integration with gopls.
+   18. The gopls instance can be shared with other Vim plugins.
+   19. Vim-go's use of gopls can be disabled and alternative tools can be used when desired.
+   20. Integration with Tagbar via gotags.
+   21. Integration with Ultisnips and other snippet engines.
+
+Install
+
+vim-go requires at least Vim 8.0.1453 or Neovim 0.4.0.
+
+The latest stable release is the recommended version to use. If you choose to use the master branch instead, please do so with caution; it is a development branch.
+
+vim-go follows the standard runtime path structure. Below are some helper lines for popular package managers:
+
+```sh
+# Vim 8 packages
+git clone https://github.com/fatih/vim-go.git ~/.vim/pack/plugins/start/vim-go
+# Neovim packages
+git clone https://github.com/fatih/vim-go.git ~/.local/share/nvim/site/pack/plugins/start/vim-go
+# Pathogen
+git clone https://github.com/fatih/vim-go.git ~/.vim/bundle/vim-go
+# vim-plug
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+# Vundle
+Plugin 'fatih/vim-go'
+```
+
+You will also need to install all the necessary binaries. vim-go makes it easy to install all of them by providing a command, :GoInstallBinaries, which will go get all the required binaries.
+
+Check out the Install section in the documentation for more detailed instructions (:help go-install).
+
+Usage
+
+The full documentation can be found at doc/vim-go.txt. You can display it from within Vim with :help vim-go.
+
+Depending on your installation method, you may have to generate the plugin's help tags manually (e.g. :helptags ALL).
+
+We also have a tutorial in the official vim-go wiki.
+
+
+### ===🗝 Vim-javascript
+- [vim-javascript](https://github.com/pangloss/vim-javascript)
+- https://www.vim.org/scripts/script.php?script_id=4452
+
+JavaScript bundle for vim, this bundle provides syntax highlighting and improved indentation.
+
+Installation
+Install with native package manager
+
+    git clone https://github.com/pangloss/vim-javascript.git ~/.vim/pack/vim-javascript/start/vim-javascript
+
+since Vim 8.
+
+Install with pathogen
+
+    git clone https://github.com/pangloss/vim-javascript.git ~/.vim/bundle/vim-javascript
+
+alternatively, use a package manager like vim-plug
+
+Configuration Variables
+The following variables control certain syntax highlighting plugins. You can add them to your .vimrc to enable their features.
+
+    let g:javascript_plugin_jsdoc = 1
+Enables syntax highlighting for JSDocs.
+
+Default Value: 0
+
+    let g:javascript_plugin_ngdoc = 1
+Enables some additional syntax highlighting for NGDocs. Requires JSDoc plugin to be enabled as well.
+
+Default Value: 0
+
+    let g:javascript_plugin_flow = 1
+Enables syntax highlighting for Flow.
+
+Default Value: 0
+
+    augroup javascript_folding
+        au!
+        au FileType javascript setlocal foldmethod=syntax
+    augroup END
+
+Enables code folding for javascript based on our syntax file.
+
+Please note this can have a dramatic effect on performance.
 
 
 ### ===🗝 Vim Project
@@ -10602,53 +12350,287 @@ on. If you want to stop tracking your session altogether, run:
 This removes the Session.vim file and disables the autocommands.
 
 
-### ===🗝 Markdown
-- https://github.com/plasticboy/vim-markdown
-- Minimd : A fast, folding Markdown outliner https://www.vim.org/scripts/script.php?script_id=5958
+### ===🗝 Vim-Cmake
+- https://github.com/cdelledonne/vim-cmake
 
-If you use Vundle, add the following lines to your `~/.vimrc`:
+Cmake 是一个自动化构建系统，可以生成 Makefile/NMake/Ninja 等等自动化构建工具的脚本，也包含 Visual Studio 工程文件。
 
-    Plugin 'godlygeek/tabular'
-    Plugin 'preservim/vim-markdown'
+创建一个演示用的简单 CMakeLists.txt 脚本，然后执行 :CMakeGenerate 和 :CMakeBuild 执行构建：
 
-The tabular plugin must come before vim-markdown.
+```sh
+cmake_minimum_required(VERSION 2.4.4)
 
-Then run inside Vim:
+project(hi C)
 
-    :so ~/.vimrc
-    :PluginInstall
+add_executable(hi ../hi.c)
+```
 
-The following commands are useful to open and close folds:
+Vim-CMake is a plugin for building CMake projects inside of Vim/Neovim, with a
+nice visual feedback.
 
-1. zr: reduces fold level throughout the buffer
-2. zR: opens all folds
-3. zm: increases fold level throughout the buffer
-4. zM: folds everything all the way
-5. za: open a fold your cursor is on
-6. zA: open a fold your cursor is on recursively
-7. zc: close a fold your cursor is on
-8. zC: close a fold your cursor is on recursively
+Features
 
-配置 `~/.vimrc` 增加 Markdown 插件选项：
+* Visual experience, shows CMake output in a console-like window
+* Slick management of build configurations
+* Autocompletion for build targets and build configurations
+* Quickfix list population after each build
+* Airline/statusline status information, including current build configuration
+* Plug-and-play, but configurable
+* Written in Vimscript
 
-    "不折叠显示，默认是折叠显示
-    let g:vim_markdown_folding_disabled = 1
-    let g:vim_markdown_override_foldtext = 0
+Requirements
 
-    "可折叠的级数，对应md的标题级别
-    let g:vim_markdown_folding_level = 6
-    let g:vim_markdown_no_default_key_mappings = 1
-    let g:vim_markdown_emphasis_multiline = 0
-    set conceallevel=2
-    let g:vim_markdown_frontmatter=1
-    syntax on
+* Vim with +terminal, or Neovim >= 0.5
+* Under Windows, only Neovim is supported at the moment
 
-可用命令：
+Installation
 
-- :Toc 
-- :Toch 
-- :Toct 
-- :Tocv
+```sh
+# Use a package manager like vim-plug:
+Plug 'cdelledonne/vim-cmake'
+
+# or Vim's native package manager:
+mkdir -p ~/.vim/pack/plug/start
+cd ~/.vim/pack/plug/start
+git clone https://github.com/cdelledonne/vim-cmake.git
+```
+
+Run `:CMakeGenerate` from the top-level CMake source directory to generate a
+build system for the project.  Then, run `:CMakeBuild` to build the project.
+The built files will end up in the binary directory ([out-of-source
+build][oos]).  To switch between build configurations, run `:CMakeSwitch
+<config>`.
+
+With Vim-CMake, you can easily manage build configurations (Debug, Release,
+etc.), build specific targets and control build options, and fix errors using
+Vim's quickfix feature.  For a detailed explanation of commands, mappings and
+functionalities run `:help cmake`.  A quick overview follows.
+
+Commands and `<Plug>` mappings
+
+| Command                   | `<Plug>` mapping  | Description                           |
+|:--------------------------|:------------------|:--------------------------------------|
+| `:CMakeGenerate[!]`       | `(CMakeGenerate)` | Generate build system                 |
+| `:CMakeClean`             | `(CMakeClean)`    | Remove build system and build files   |
+| `:CMakeBuild[!] [target]` | `(CMakeBuild)`    | Build a project                       |
+| `:CMakeInstall`           | `(CMakeInstall)`  | Install build output                  |
+| `:CMakeSwitch <config>`   | `(CMakeSwitch)`   | Switch to another build configuration |
+| `:CMakeOpen`              | `(CMakeOpen)`     | Open CMake console window             |
+| `:CMakeClose`             | `(CMakeClose)`    | Close CMake console window            |
+| `:CMakeStop`              | `(CMakeStop)`     | Stop running command                  |
+
+Additional `<Plug>` mappings
+
+| `<Plug>` mapping     | Behaves as                                            |
+|:---------------------|:------------------------------------------------------|
+| `(CMakeBuildTarget)` | `(CMakeBuild)`, but leaves cursor in the command line |
+
+Global <Plug> mappings~
+
+| <Plug>(CMakeGenerate)    | `:CMakeGenerate`.                                      |
+| <Plug>(CMakeClean)       | `:CMakeClean`.                                         |
+| <Plug>(CMakeBuild)       | `:CMakeBuild`.                                         |
+| <Plug>(CMakeBuildTarget) | Inserts `:CMakeBuild` in the command line, and leaves  |
+|                          | the cursor there.                                      |
+| <Plug>(CMakeInstall)     | `:CMakeInstall`.                                       |
+| <Plug>(CMakeSwitch)      | Inserts `:CMakeSwitch` in the command line, and leaves |
+|                          | the cursor there.                                      |
+| <Plug>(CMakeOpen)        | `:CMakeOpen`.                                          |
+| <Plug>(CMakeClose)       | `:CMakeClose`.                                         |
+| <Plug>(CMakeStop)        | `:CMakeStop`.                                          |
+
+Example usage of the <Plug> mappings:
+>
+    nmap <leader>cg <Plug>(CMakeGenerate)
+    nmap <leader>cb <Plug>(CMakeBuild)
+    nmap <leader>ci <Plug>(CMakeInstall)
+    nmap <leader>cs <Plug>(CMakeSwitch)
+    nmap <leader>cq <Plug>(CMakeClose)
+
+Key mappings in the CMake console window
+
+| Key mapping | Description                |
+|:------------|:---------------------------|
+| `cg`        | Run `:CMakeGenerate`       |
+| `cb`        | Run `:CMakeBuild`          |
+| `ci`        | Run `:CMakeInstall`        |
+| `cq`        | Close CMake console window |
+| `<C-C>`     | Stop running command       |
+
+
+Configuration
+
+Vim-CMake has sensible defaults. Again, run `:help cmake` for an extensive
+documentation of all the configuration options.  A list of default values
+follows.
+
+| Options                         | Default            |
+|:--------------------------------|:-------------------|
+| `g:cmake_command`               | `'cmake'`          |
+| `g:cmake_default_config`        | `'Debug'`          |
+| `g:cmake_build_dir_location`    | `'.'`              |
+| `g:cmake_generate_options`      | `[]`               |
+| `g:cmake_build_options`         | `[]`               |
+| `g:cmake_native_build_options`  | `[]`               |
+| `g:cmake_console_size`          | `15`               |
+| `g:cmake_console_position`      | `'botright'`       |
+| `g:cmake_console_echo_cmd`      | `1`                |
+| `g:cmake_jump`                  | `0`                |
+| `g:cmake_jump_on_completion`    | `0`                |
+| `g:cmake_jump_on_error`         | `1`                |
+| `g:cmake_link_compile_commands` | `0`                |
+| `g:cmake_root_markers`          | `['.git', '.svn']` |
+| `g:cmake_log_file`              | `''`               |
+
+
+------------------------------------------------------------------------------
+                            *cmake-generate*
+Generating a project build system~
+                            *:CMakeGenerate*
+:CMakeGenerate[!] [config] [opts]
+            Generate project build system for a CMake project.  If
+            [!] is supplied, the existing build system is removed
+            before generating a new one.  [config] specifies the
+            build configuration to generate.  [opts] are passed
+            directly to CMake.
+
+By default, the build system is generated for the build configuration
+specified by `g:cmake_default_config` (see |cmake-configuration|).  For
+instance, if the default build configuration is "Debug", `cmake` will be
+passed `-D CMAKE_BUILD_TYPE=Debug`, and the build system will be generated in
+`Debug/`, relative to `g:cmake_build_dir_location` (see
+|cmake-configuration|).  That will result in the following `cmake` command:
+>
+    cmake -D CMAKE_BUILD_TYPE=Debug [...] \
+        -S <project_root> -B <build_dir_location>/Debug
+<
+To generate a build system for another configuration, e.g., "Release", run
+>
+    :CMakeGenerate Release [...]
+<
+which will result in the following `cmake` command:
+>
+    cmake -D CMAKE_BUILD_TYPE=Release [...] \
+        -S <project_root> -B <build_dir_location>/Release
+<
+To generate a build system for a configuration, while passing a different
+`CMAKE_BUILD_TYPE` to `cmake`, run
+>
+    :CMakeGenerate SomeConfigName -D CMAKE_BUILD_TYPE=Release [...]
+<
+which will result in the following `cmake` command:
+>
+    cmake -D CMAKE_BUILD_TYPE=Release [...] \
+        -S <project_root> -B <build_dir_location>/SomeConfigName
+<
+Use |:CMakeSwitch| to switch between build configurations.
+
+                            *:CMakeClean*
+:CMakeClean     Remove project build system relative to the current
+            build configuration.
+
+
+------------------------------------------------------------------------------
+Building and installing a project~
+                            *:CMakeBuild*
+:CMakeBuild[!] [opts] [target] [-- [nativeopts]]
+            Build a project using the generated build system
+            from the current build configuration, and populate a
+            quickfix list (see |cmake-quickfix|).  If [!] is
+            supplied, the existing build files are cleaned (using
+            CMake's `--clean-first` option) before building the
+            project.  [opts] are passed directly to CMake.
+            [target] is the target to build instead of the default
+            target.  [nativeopts] are passed directly to the
+            native tool.
+
+For instance, to build the target `mytarget` using a maximum of 4 processes
+and passing the `VERBOSE=1` option to the native tool, run
+>
+    :CMakeBuild --parallel 4 mytarget -- VERBOSE=1
+<
+Vim-CMake provides autocompletion for build targets.  Just press <TAB> at any
+point after `:CMakeBuild` in the command line to trigger autocompletion, e.g.
+>
+    :CMakeBuild --parallel 4 <TAB>
+<
+                            *:CMakeInstall*
+:CMakeInstall       Install a project from the current build
+            configuration.
+
+------------------------------------------------------------------------------
+                            *cmake-switch*
+Switching between build configurations~
+                            *:CMakeSwitch*
+:CMakeSwitch {config}   Switch to build configuration {config}.  The build
+            configuration must exist, that is, there has to be a
+            project build system (for instance generated with
+            |:CMakeGenerate|) in the directory {config}.
+
+For instance, to switch to an existing configuration called "Release", run
+>
+    :CMakeSwitch Release
+<
+The default build configuration on start-up is specified by
+`g:cmake_default_config` (see |cmake-configuration|).  Use |:CMakeGenerate| to
+generate a build configuration.
+
+
+==============================================================================
+EVENTS                          *cmake-events*
+
+Vim-CMake provides a set of custom events to trigger further actions.
+Run `:help cmake` for an extensive documentation of all configuration options and examples
+
+| Event                           | Description                               |
+|:--------------------------------|:------------------------------------------|
+| `User CMakeBuildSucceeded`      | Triggered after a successful `:CMakeBuild`|
+| `User CMakeBuildFailed`         | Triggered after a failed `:CMakeBuild`    |
+
+Example usage of `CMakeBuildFailed` to jump to the first error
+>
+    let g:cmake_jump_on_error = 0 " We do not want to focus the console
+    augroup vim-cmake-group
+    autocmd User CMakeBuildFailed :cfirst
+    augroup END
+<
+Example usage of `CMakeBuildSucceeded` to close the Vim-CMake console
+>
+    augroup vim-cmake-group
+    autocmd! User CMakeBuildSucceeded CMakeClose
+    augroup END
+<
+
+
+
+
+
+
+### ===🗝 YouCompleteMe - Auto-Complete
+- https://github.com/Valloric/YouCompleteMe
+
+YouCOmpleteMe 插件比较大，如果遇到网络问题安装中断，可以考虑重新克隆子模块：
+
+    git clone git@github.com:Valloric/YouCompleteMe.git
+    
+    git submodule update --init --recursive
+
+The best plugin for Python auto-complete is YouCompleteMe. Again, use Vundle to install:
+
+    Bundle 'Valloric/YouCompleteMe'
+
+Under the hood, YouCompleteMe uses a few different auto-completers (including Jedi for Python), and it needs some C libraries to be installed for it to work correctly. The docs have very good installation instructions, so I won’t repeat them here, but be sure you follow them.
+
+It works out of the box pretty well, but let’s add a few customizations:
+
+    let g:ycm_autoclose_preview_window_after_completion=1
+    map <leader>g  :YcmCompleter GoToDefinitionElseDeclaration<CR>
+
+The first line ensures that the auto-complete window goes away when you’re done with it, and the second defines a shortcut for goto definition.
+
+Note: My leader key is mapped to space, so space-g will goto definition of whatever I’m currently on. That’s helpful when I’m exploring new code.
+
+
 
 ### ===🗝 LSP - Language Server Protocol
 1. https://github.com/tonini/alchemist-server

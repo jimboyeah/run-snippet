@@ -184,7 +184,7 @@ xDoubleStruck-0:              \n\
       ("xArrowsB-U ⇧", "", "⇧"),
       ("xArrowsB-D ⇩", "", "⇩"),
       ("xArrowsC-L ⬅", "", "⬅"),
-      ("xArrowsC-R ⮕", "", "⮕"),
+      ("xArrowsC-R ➡", "", "➡"),
       ("xArrowsC-U ⬆", "", "⬆"),
       ("xArrowsC-D ⬇", "", "⬇"),
       ("xArrowsD-L 🡐", "", "🡐"),
@@ -193,7 +193,7 @@ xDoubleStruck-0:              \n\
       ("xArrowsD-D 🡓", "", "🡓"),
       ("xArrowsE-L ⟵", "", "⟵"),
       ("xArrowsE-R ⟶", "", "⟶"),
-      ("xArrowsF-R ➡", "", "➡"),
+      ("xArrowsF-R ⮕", "", "⮕"),
 
       ("xBentArrows-U ⭜", "", "⭜"),
       ("xBentArrows-D ⭝", "", "⭝"),
