@@ -17,21 +17,21 @@ Config Context.sublime-menu and sbulime-keymap:
         "command": "run_snippet",
         "mnemonic": "R",
         "id": "run_snippet",
-        "keys": ["f6"], 
+        "keys": ["f6"],
     },
         {
         "caption": "Jupm to ...",
         "command": "jump_to",
         "mnemonic": "j",
         "id": "jump_to",
-        "keys": ["f9"], 
+        "keys": ["f9"],
     },
 ]
 
 - language-reference\builtin-types\value-types.md
 - language-reference/builtin-types/value-types.md
 - [`is` expression](operators/is.md)
-# csharp\fundamentals\functional\pattern-matching.md
+# csharp\fundamentals\functional\\pattern-matching.md
 :::code language="csharp" source="Program.cs" ID="NullableCheck":::
 
 - md/sublime.md
@@ -47,6 +47,7 @@ Config Context.sublime-menu and sbulime-keymap:
 - RunSnippet/material/bash.5.1.md
 - RunSnippet/material/linux_cli_script_bible.md
 '''
+
 
 class JumpToCommand(TextCommand, ViewEventListener):
 
@@ -68,26 +69,29 @@ class JumpToCommand(TextCommand, ViewEventListener):
     # F12           goto_definition
     # Ctrl+Shift+P  show_overlay: command_palette
     def jump(self, file):
-        if not file: return;
+        if not file:
+            return
         text = file["text"]
         kind = file["kind"]
         symbol = ""
-        if kind == "selected" and None == re.search(r".+[\. /\\].+", text):
+        if kind == "selected" and None is re.search(r".+[\. /\\].+", text):
             symbol = "@"
         elif kind == "ctags":
             return self.ctags(text)
         elif text.startswith("http") or text.startswith("file://"):
             return os.popen("start %s" % text)
         elif text.startswith("#"):
-            hash = re.sub(r'[-_#]',lambda x: ' ', text)
-            return self.view.window().run_command('show_overlay',
-                {'overlay':'goto', 'text':'@'+hash})
+            hash = re.sub(r'[-_#]', lambda x: ' ', text)
+            return self.view.window().run_command(
+                'show_overlay',
+                {'overlay': 'goto', 'text': '@'+hash})
 
         for it in range(0, self.view.window().num_groups()):
             print("RSttings", Settings.RSettings.settings_id, Settings.RSettings)
             (between, rs) = Settings.get("jump_between_group")
             print(("jump_between_group"), between, rs.settings_id)
-            if not between: break
+            if not between:
+                break
             grouped = self.view.window().views_in_group(it)
             if self.view in grouped:
                 continue
@@ -95,20 +99,23 @@ class JumpToCommand(TextCommand, ViewEventListener):
             # self.view.window().active_group()
             # self.view.window().active_view_in_gorup(it)
 
-        self.view.window().run_command("show_overlay", 
-        {"overlay":"goto", "show_file": True, "text": symbol+text.replace("\\","/")})
+        text = symbol+text.replace("\\", "/")
+        self.view.window().run_command(
+            "show_overlay",
+            {"overlay": "goto", "show_file": True, "text": text})
 
     """
     Vim CTags in-file jumping
 
     1. Setting options          |set-option|
     1. Setting options          *set-option* *E764*
-    
+
     more for test ...           *set-option* *E764*
     """
     keyword1st = "keyword"
     lasttime = datetime.now()
     duration = timedelta(microseconds=300000)
+
     def ctags(self, ctag):
 
         if not isinstance(ctag, str): 
@@ -125,25 +132,22 @@ class JumpToCommand(TextCommand, ViewEventListener):
                 return self.view.show_at_center(region)
 
         self.lasttime = datetime.now()
-        tags = "[|]{0}[|]|[*]{0}[*]".format(ctag)
+        tags = r"(\*|\|){0}\1|\[{0}\]".format(ctag)
         sets = self.view.find_all(tags, IGNORECASE)
         # self.view.sel().add_all(sets)
         rgn = self.view.sel()[0]
 
         # where I can find the keyboard modifier? 
         # I need it to reverse the backward direction.
-        for it in sets: 
-            if it.b < rgn.a or it.a <= rgn.a <= it.b: 
-                if sets[-1] != it: continue
+        for it in sets:
+            if it.b < rgn.a or it.a <= rgn.a <= it.b:
+                if sets[-1] != it:
+                    continue
                 it = sets[0]
-            self.view.sel().add(it.a+1)
             self.view.sel().subtract(rgn)
+            self.view.sel().add(it.a+1)
             self.view.show_at_center(it)
             break
-
-    def is_enabled(self, *args):
-        Logger.message("jump to is_enabled %s" % str(args))
-        return self.parseline() != None
 
     # def on_post_text_command(self, action, extras):
     #     Logger.message("jump to: %s %s" % (action, str(extras)))
@@ -152,14 +156,21 @@ class JumpToCommand(TextCommand, ViewEventListener):
     #         Logger.message("jump to: %s" % (file))
     #         self.jump(file)
 
+    def is_enabled(self, *args):
+        Logger.message("jump to is_enabled %s" % str(args))
+        return self.parseline() is not None
+
     def parseline(self):
+
         sel = self.view.sel()
-        rng = len(sel) and sel[0]
+        if len(sel) == 0:
+            return
+        rng = sel[0]
 
         if rng.a != rng.b:
             sel = self.view.substr(rng)
-            if len(sel.split("\n"))==1:
-                return {"kind":"selected", "text": sel}
+            if len(sel.split("\n")) == 1:
+                return {"kind": "selected", "text": sel}
         rnl = self.view.line(rng.a)
         if rnl.a == rnl.b:
             return None
@@ -171,52 +182,62 @@ class JumpToCommand(TextCommand, ViewEventListener):
         lp = line[0:point] or ""
 
         r = rp.find("|")
-        l = lp.rfind("|")
-        if r>=0 and l>=0 :
-            return {"kind":"ctags", "text": line[l+1:r+point]}
+        t = lp.rfind("|")
+        if r >= 0 and t >= 0:
+            return {"kind": "ctags", "text": line[t+1:r+point]}
 
         r = rp.find("]")
-        l = lp.rfind("[")
-        if r>=0 and l>=0 :
-            return {"kind":"ctags", "text": line[l+1:r+point]}
+        t = lp.rfind("[")
+        if r >= 0 and t >= 0:
+            return {"kind": "ctags", "text": line[t+1:r+point]}
 
         r = rp.find("'")
-        l = lp.rfind("'")
-        if r>=0 and l>=0 :
-            return {"kind":"quote", "text": line[l+1:r+point]}
+        t = lp.rfind("'")
+        if r >= 0 and t >= 0:
+            return {"kind": "quote", "text": line[t+1:r+point]}
 
         r = rp.find('"')
-        l = lp.rfind('"')
-        if r>=0 and l>=0 :
-            return {"kind":"quote", "text": line[l+1:r+point]}
+        t = lp.rfind('"')
+        if r >= 0 and t >= 0:
+            return {"kind": "quote", "text": line[t+1:r+point]}
 
         r = rp.find(")")
-        l = lp.rfind("(")
-        if r>=0 and l>=0 :
-            return {"kind":"quote", "text": line[l+1:r+point]}
+        t = lp.rfind("(")
+        if r >= 0 and t >= 0:
+            return {"kind": "quote", "text": line[t+1:r+point]}
 
         r = rp.find("`")
-        l = lp.rfind("`")
-        if r>=0 and l>=0 :
-            return {"kind":"quote", "text": line[l+1:r+point]}
+        t = lp.rfind("`")
+        if r >= 0 and t >= 0:
+            return {"kind": "quote", "text": line[t+1:r+point]}
 
         r = rp.find("*")
-        l = lp.rfind("*")
-        if r>=0 and l>=0 :
-            return {"kind":"ctags", "text": line[l+1:r+point]}
+        t = lp.rfind("*")
+        if r >= 0 and t >= 0:
+            return {"kind": "ctags", "text": line[t+1:r+point]}
 
-        l = lp.find(' ')
-        if l==1:
-            return {"kind":"spaced", "text": line[l+1:].strip()}
+        t = lp.find(' ')
+        if t == 1:
+            return {"kind": "spaced", "text": line[t+1:].strip()}
 
-        l = lp.rfind(' ')
+        t = lp.rfind(' ')
         r = rp.find(' ')
-        if l == -1: l = 0
-        if r == -1: r = len(rp)
-        block = line[l:r+point].strip()
+        if t == -1:
+            t = 0
+        if r == -1:
+            r = len(rp)
+        block = line[t:r+point].strip()
         if block.startswith("http") or block.startswith("file://"):
-            return {"kind":"block", "text": block}
+            return {"kind": "block", "text": block}
         else:
-            return {"kind":"spaced", "text": block}
-        
-        print(lp, "<===>" , rp)
+            return {"kind": "spaced", "text": block}
+
+        print(lp, "<===>", rp)
+
+
+# def plugin_loaded() -> None:
+#     print("plugin loaded")
+
+
+# def plugin_unloaded() -> None:
+#     print("plugin unloaded")
