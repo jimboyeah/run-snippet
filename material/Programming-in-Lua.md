@@ -3682,7 +3682,7 @@ Note that these functions come from the os library, not the io library, because 
 not streams.
 
 All these functions return nil plus an error message and an error code in case of errors.
-```
+
 
 The External World
 
@@ -3718,28 +3718,32 @@ program terminated normally or "signal" if it was interrupted by a signal. A thi
 status (if the program terminated normally) or the number of the signal that terminated the program. As
 an example, both in POSIX and Windows we can use the following function to create new directories:
 
+```lua
 function createDir (dirname)
-os.execute("mkdir " .. dirname)
+  os.execute("mkdir " .. dirname)
 end
+```
 
 Another quite useful function is io.popen.^2 Like os.execute, it runs a system command, but it also
 connects the command output (or input) to a new local stream and returns that stream, so that our script
 can read data from (or write to) the command. For instance, the following script builds a table with the
 entries in the current directory:
 
-```
+```lua
 -- for POSIX systems, use 'ls' instead of 'dir'
 local f = io.popen("dir /B", "r")
 local dir = {}
 for entry in f:lines() do
-dir[#dir + 1] = entry
+  dir[#dir + 1] = entry
 end
+```
 
 The second parameter ("r") to io.popen means that we intend to read from the command. The default
 is to read, so this parameter is optional in the example.
 
 The next example sends an email message:
 
+```lua
 local subject = "some news"
 local address = "someone@somewhere.org"
 
@@ -3747,17 +3751,16 @@ local cmd = string.format("mail -s '%s' '%s'", subject, address)
 local f = io.popen(cmd, "w")
 f:write([[
 Nothing important to say.
+-- me
+]])
+f:close()
 ```
+
+
 (^2) This function is not available in all Lua installations, because the corresponding functionality is not part of ISO C. Despite not being standard in
 C, we included it in the standard libraries due to its generality and presence in major operating systems.
 
 
-```
--- me
-]])
-f:close()
-
-```
 (This script only works on POSIX systems, with the appropriate packages installed.) The second parameter
 to io.popen now is "w", meaning that we intend to write to the command.
 
@@ -3780,7 +3783,7 @@ an existing file for its output.
 
 Exercise 7.3: Compare the performance of Lua programs that copy the standard input stream to the standard
 output stream in the following ways:
-```
+
 - byte by byte;
 - line by line;
 - in chunks of 8 kB;

@@ -849,13 +849,11 @@ An error interrupts the normal flow of the program,
 which can continue by catching the error.
 
 
-Lua code can explicitly raise an error by calling the
- [error]  function.
+Lua code can explicitly raise an error by calling the [error]  function.
 (This function never returns.)
 
 
-To catch errors in Lua,
-you can do a protected call,
+To catch errors in Lua, you can do a protected call,
 using  [pcall]  (or  [xpcall] ).
 The function  [pcall]  calls a given function in protected mode.
 Any error while running the function stops its execution,
@@ -8868,11 +8866,9 @@ the table during its traversal.
 ### pcall (f [, arg1, ···])
                                                      [contents] [index] *pcall*
 
-Calls the function `f` with
-the given arguments in protected mode.
+Calls the function `f` with the given arguments in protected mode.
 This means that any error inside `f` is not propagated;
-instead, `pcall` catches the error
-and returns a status code.
+instead, `pcall` catches the error and returns a status code.
 Its first result is the status code (a boolean),
 which is *true* if the call succeeds without errors.
 In such case, `pcall` also returns all results from the call,
@@ -10995,8 +10991,7 @@ on all platforms.
 
 Starts the program `prog` in a separated process and returns
 a file handle that you can use to read data from this program
-(if `mode` is `"r"`, the default)
-or to write data to this program
+(if `mode` is `"r"`, the default) or to write data to this program
 (if `mode` is `"w"`).
 
 
@@ -11296,11 +11291,9 @@ this value is exactly `t2`-`t1`.
 
 This function is equivalent to the ISO C function `system`.
 It passes `command` to be executed by an operating system shell.
-Its first result is *true*
-if the command terminated successfully,
+Its first result is *true* if the command terminated successfully,
 or *fail* otherwise.
-After this first result
-the function returns a string plus a number,
+After this first result the function returns a string plus a number,
 as follows:
 
 
