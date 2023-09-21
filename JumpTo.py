@@ -1,7 +1,7 @@
 import os
 import re
 import sys
-import sublime_api as sapi
+import json
 from sublime import *
 from sublime_plugin import *
 from datetime import datetime, timedelta
@@ -9,44 +9,6 @@ from datetime import datetime, timedelta
 from . import Settings
 from .RunSnippet import Logger
 
-'''
-Config Context.sublime-menu and sbulime-keymap:
-[
-    {
-        "caption": "Run Snippet code",
-        "command": "run_snippet",
-        "mnemonic": "R",
-        "id": "run_snippet",
-        "keys": ["f6"],
-    },
-        {
-        "caption": "Jupm to ...",
-        "command": "jump_to",
-        "mnemonic": "j",
-        "id": "jump_to",
-        "keys": ["f9"],
-    },
-]
-
-- language-reference\builtin-types\value-types.md
-- language-reference/builtin-types/value-types.md
-- [`is` expression](operators/is.md)
-# csharp\fundamentals\functional\\pattern-matching.md
-:::code language="csharp" source="Program.cs" ID="NullableCheck":::
-
-- md/sublime.md
-- RunSnippet/readme.md
-- RunSnippet/JumpTo.py
-- RunSnippet/UnicodeSymbols.py
-- Lib/python33/sublime.py
-- Lib/python33/sublime_plugin.py
-- Lib/python38/sublime.py
-- Lib/python38/sublime_plugin.py
-- User/RunSnippet.sublime-settings
-- RunSnippet/material/vim_flavor.md
-- RunSnippet/material/bash.5.1.md
-- RunSnippet/material/linux_cli_script_bible.md
-'''
 
 
 class JumpToCommand(TextCommand, ViewEventListener):
@@ -57,50 +19,52 @@ class JumpToCommand(TextCommand, ViewEventListener):
         # print("init JumpTo %s ===" % (str(args)))
         Logger.message("init %s" % str(args))
 
-    def run(self, edit, *args):
-        # Logger.message("JumpToCommand %s" % str(args))
-        file = self.parseline()
-        self.jump(file)
-
     # Ctrl+P        show_overlay: goto, "show_files": true
     # Ctrl+R        show_overlay: goto, "text": "@"
     # Ctrl+G        show_overlay: goto, "text": ":"
     # Ctrl+;        show_overlay: goto, "text": "#"
     # F12           goto_definition
     # Ctrl+Shift+P  show_overlay: command_palette
-    def jump(self, file):
-        if not file:
+    def run(self, edit, *args):
+        ctx = self.parseline()
+        win = self.view.window()
+        if not ctx or not win:
             return
-        text = file["text"]
-        kind = file["kind"]
+        text = ctx.text
+        kind = ctx.kind
         symbol = ""
-        if kind == "selected" and None is re.search(r".+[\. /\\].+", text):
+        if isinstance(kind, MatchKindSelected) and None is re.search(r".+[\. /\\].+", text):
             symbol = "@"
-        elif kind == "ctags":
+        elif isinstance(kind, MatchKindCtags):
             return self.ctags(text)
+        elif isinstance(kind, MatchKindSymbol):
+            print(ctx.toString())
+            self.view.sel().clear()
+            self.view.sel().add(Region(ctx.begin, ctx.end))
+            win.run_command("copy",)
+            win.run_command('goto_symbol_in_project', {'overlay':'goto'}) # `run`
+            return win.run_command('paste',)
+            # "goto_definition", {"side_by_side": True, "clear_to_right": True} )
         elif text.startswith("http") or text.startswith("file://"):
             return os.popen("start %s" % text)
         elif text.startswith("#"):
             hash = re.sub(r'[-_#]', lambda x: ' ', text)
-            return self.view.window().run_command(
+            return win.run_command(
                 'show_overlay',
                 {'overlay': 'goto', 'text': '@'+hash})
 
-        for it in range(0, self.view.window().num_groups()):
-            print("RSttings", Settings.RSettings.settings_id, Settings.RSettings)
+        for it in range(0, win.num_groups()):
             (between, rs) = Settings.get("jump_between_group")
             print(("jump_between_group"), between, rs.settings_id)
             if not between:
                 break
-            grouped = self.view.window().views_in_group(it)
+            grouped = win.views_in_group(it)
             if self.view in grouped:
                 continue
-            self.view.window().focus_group(it)
-            # self.view.window().active_group()
-            # self.view.window().active_view_in_gorup(it)
+            win.focus_group(it)
 
         text = symbol+text.replace("\\", "/")
-        self.view.window().run_command(
+        win.run_command(
             "show_overlay",
             {"overlay": "goto", "show_file": True, "text": text})
 
@@ -114,7 +78,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
     """
     keyword1st = "keyword"
     lasttime = datetime.now()
-    duration = timedelta(microseconds=300000)
+    duration = timedelta(microseconds=200000)
 
     def ctags(self, ctag):
 
@@ -134,7 +98,6 @@ class JumpToCommand(TextCommand, ViewEventListener):
         self.lasttime = datetime.now()
         tags = r"(\*|\|){0}\1|\[{0}\]".format(ctag)
         sets = self.view.find_all(tags, IGNORECASE)
-        # self.view.sel().add_all(sets)
         rgn = self.view.sel()[0]
 
         # where I can find the keyboard modifier? 
@@ -149,13 +112,6 @@ class JumpToCommand(TextCommand, ViewEventListener):
             self.view.show_at_center(it)
             break
 
-    # def on_post_text_command(self, action, extras):
-    #     Logger.message("jump to: %s %s" % (action, str(extras)))
-    #     if action == "drag_select" and extras and 'extend' in extras:
-    #         file = self.parseline()
-    #         Logger.message("jump to: %s" % (file))
-    #         self.jump(file)
-
     def is_enabled(self, *args):
         Logger.message("jump to is_enabled %s" % str(args))
         return self.parseline() is not None
@@ -165,60 +121,61 @@ class JumpToCommand(TextCommand, ViewEventListener):
         sel = self.view.sel()
         if len(sel) == 0:
             return
-        rng = sel[0]
+        region = sel[0]
 
-        if rng.a != rng.b:
-            sel = self.view.substr(rng)
+        if region.a != region.b:
+            sel = self.view.substr(region)
             if len(sel.split("\n")) == 1:
-                return {"kind": "selected", "text": sel}
-        rnl = self.view.line(rng.a)
-        if rnl.a == rnl.b:
+                return MatchArea(MatchKindSelected(), sel, region.a, region.b)
+
+        region_of_line = self.view.line(region.a) 
+        if region_of_line.a == region_of_line.b:
             return None
 
-        line = self.view.substr(rnl)
-        point = rng.a - rnl.a
+        line = self.view.substr(region_of_line)
+        offset = region.a - region_of_line.a
 
-        rp = line[point:] or ""
-        lp = line[0:point] or ""
+        rp = line[offset:] or ""
+        lp = line[0:offset] or ""
 
         r = rp.find("|")
         t = lp.rfind("|")
-        if r >= 0 and t >= 0:
-            return {"kind": "ctags", "text": line[t+1:r+point]}
+        if r >= 0 and t >= 0:#`abcde`
+            return MatchArea(MatchKindCtags(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("]")
         t = lp.rfind("[")
         if r >= 0 and t >= 0:
-            return {"kind": "ctags", "text": line[t+1:r+point]}
+            return MatchArea(MatchKindCtags(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("'")
         t = lp.rfind("'")
         if r >= 0 and t >= 0:
-            return {"kind": "quote", "text": line[t+1:r+point]}
+            return MatchArea(MatchKindQuote(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find('"')
         t = lp.rfind('"')
         if r >= 0 and t >= 0:
-            return {"kind": "quote", "text": line[t+1:r+point]}
+            return MatchArea(MatchKindQuote(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find(")")
         t = lp.rfind("(")
         if r >= 0 and t >= 0:
-            return {"kind": "quote", "text": line[t+1:r+point]}
+            return MatchArea(MatchKindQuote(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("`")
         t = lp.rfind("`")
         if r >= 0 and t >= 0:
-            return {"kind": "quote", "text": line[t+1:r+point]}
+            return MatchArea(MatchKindSymbol(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("*")
         t = lp.rfind("*")
         if r >= 0 and t >= 0:
-            return {"kind": "ctags", "text": line[t+1:r+point]}
+            return MatchArea(MatchKindCtags(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         t = lp.find(' ')
         if t == 1:
-            return {"kind": "spaced", "text": line[t+1:].strip()}
+            return MatchArea(MatchKindSpaced(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         t = lp.rfind(' ')
         r = rp.find(' ')
@@ -226,14 +183,11 @@ class JumpToCommand(TextCommand, ViewEventListener):
             t = 0
         if r == -1:
             r = len(rp)
-        block = line[t:r+point].strip()
+        block = line[t:r+offset].strip()
         if block.startswith("http") or block.startswith("file://"):
-            return {"kind": "block", "text": block}
+            return MatchArea(MatchKindBlock(), block, region.a-offset+t+1, region.a+r)
         else:
-            return {"kind": "spaced", "text": block}
-
-        print(lp, "<===>", rp)
-
+            return MatchArea(MatchKindSpaced(), block, region.a-offset+t+1, region.a+r)
 
 # def plugin_loaded() -> None:
 #     print("plugin loaded")
@@ -241,3 +195,24 @@ class JumpToCommand(TextCommand, ViewEventListener):
 
 # def plugin_unloaded() -> None:
 #     print("plugin unloaded")
+
+class MatchKind: pass
+class MatchKindSpaced (MatchKind): pass
+class MatchKindBlock (MatchKind): pass
+class MatchKindText (MatchKind): pass
+class MatchKindFile (MatchKind): pass
+class MatchKindSymbol (MatchKind): pass
+class MatchKindSelected (MatchKind): pass
+class MatchKindQuote (MatchKind): pass
+class MatchKindCtags (MatchKind): pass
+
+class MatchArea:
+
+    def __init__(self, kind:MatchKind, text:str, begin:int, end:int):
+        self.kind = kind
+        self.text = text
+        self.begin = begin
+        self.end = end
+
+    def toString(self):
+        return r'<MatchArea kind=%s text=%s [%d,%d]>' % (self.kind, self.text, self.begin, self.end)
