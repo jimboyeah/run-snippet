@@ -114,7 +114,8 @@ class RunSnippetCommand(TextCommand):
 name = "exec" # "TestPlugin_OutputPanel"
 class Logger(sublime._LogWriter):
 
-    def message(content):
+    @classmethod
+    def message(cls, content:str):
         msg = "⚡RS: %s" % content
         sublime.status_message(msg)
         pass

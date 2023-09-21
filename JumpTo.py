@@ -1,30 +1,19 @@
 import os
 import re
 import sys
-import json
 from sublime import *
 from sublime_plugin import *
 from datetime import datetime, timedelta
-
 from . import Settings
 from .RunSnippet import Logger
-
-
 
 class JumpToCommand(TextCommand, ViewEventListener):
 
     def __init__(self, *args):
         if args and isinstance(args[0], View):
             self.view = args[0]
-        # print("init JumpTo %s ===" % (str(args)))
-        Logger.message("init %s" % str(args))
+        Logger.message("Jumpto init %s %s " % (str(args), sys.version))
 
-    # Ctrl+P        show_overlay: goto, "show_files": true
-    # Ctrl+R        show_overlay: goto, "text": "@"
-    # Ctrl+G        show_overlay: goto, "text": ":"
-    # Ctrl+;        show_overlay: goto, "text": "#"
-    # F12           goto_definition
-    # Ctrl+Shift+P  show_overlay: command_palette
     def run(self, edit, *args):
         ctx = self.parseline()
         win = self.view.window()
@@ -33,11 +22,11 @@ class JumpToCommand(TextCommand, ViewEventListener):
         text = ctx.text
         kind = ctx.kind
         symbol = ""
-        if isinstance(kind, MatchKindSelected) and None is re.search(r".+[\. /\\].+", text):
+        if (kind == kindSelected) and None is re.search(r".+[\. /\\].+", text):
             symbol = "@"
-        elif isinstance(kind, MatchKindCtags):
+        elif (kind == kindCtags):
             return self.ctags(text)
-        elif isinstance(kind, MatchKindSymbol):
+        elif (kind == kindSymbol):
             print(ctx.toString())
             self.view.sel().clear()
             self.view.sel().add(Region(ctx.begin, ctx.end))
@@ -126,7 +115,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
         if region.a != region.b:
             sel = self.view.substr(region)
             if len(sel.split("\n")) == 1:
-                return MatchArea(MatchKindSelected(), sel, region.a, region.b)
+                return MatchArea(kindSelected, sel, region.a, region.b)
 
         region_of_line = self.view.line(region.a) 
         if region_of_line.a == region_of_line.b:
@@ -141,41 +130,41 @@ class JumpToCommand(TextCommand, ViewEventListener):
         r = rp.find("|")
         t = lp.rfind("|")
         if r >= 0 and t >= 0:#`abcde`
-            return MatchArea(MatchKindCtags(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("]")
         t = lp.rfind("[")
         if r >= 0 and t >= 0:
-            return MatchArea(MatchKindCtags(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("'")
         t = lp.rfind("'")
         if r >= 0 and t >= 0:
-            return MatchArea(MatchKindQuote(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindQuote, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find('"')
         t = lp.rfind('"')
         if r >= 0 and t >= 0:
-            return MatchArea(MatchKindQuote(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindQuote, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find(")")
         t = lp.rfind("(")
         if r >= 0 and t >= 0:
-            return MatchArea(MatchKindQuote(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindQuote, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("`")
         t = lp.rfind("`")
         if r >= 0 and t >= 0:
-            return MatchArea(MatchKindSymbol(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindSymbol, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("*")
         t = lp.rfind("*")
         if r >= 0 and t >= 0:
-            return MatchArea(MatchKindCtags(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         t = lp.find(' ')
         if t == 1:
-            return MatchArea(MatchKindSpaced(), line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            return MatchArea(kindSpaced, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         t = lp.rfind(' ')
         r = rp.find(' ')
@@ -185,9 +174,9 @@ class JumpToCommand(TextCommand, ViewEventListener):
             r = len(rp)
         block = line[t:r+offset].strip()
         if block.startswith("http") or block.startswith("file://"):
-            return MatchArea(MatchKindBlock(), block, region.a-offset+t+1, region.a+r)
+            return MatchArea(kindBlock, block, region.a-offset+t+1, region.a+r)
         else:
-            return MatchArea(MatchKindSpaced(), block, region.a-offset+t+1, region.a+r)
+            return MatchArea(kindSpaced, block, region.a-offset+t+1, region.a+r)
 
 # def plugin_loaded() -> None:
 #     print("plugin loaded")
@@ -196,15 +185,18 @@ class JumpToCommand(TextCommand, ViewEventListener):
 # def plugin_unloaded() -> None:
 #     print("plugin unloaded")
 
-class MatchKind: pass
-class MatchKindSpaced (MatchKind): pass
-class MatchKindBlock (MatchKind): pass
-class MatchKindText (MatchKind): pass
-class MatchKindFile (MatchKind): pass
-class MatchKindSymbol (MatchKind): pass
-class MatchKindSelected (MatchKind): pass
-class MatchKindQuote (MatchKind): pass
-class MatchKindCtags (MatchKind): pass
+class MatchKind: 
+    def __init__(self, kind:str):
+        self.kind = kind
+
+kindSpaced = MatchKind('Spaced')
+kindBlock = MatchKind('Block')
+kindText = MatchKind('Text')
+kindFile = MatchKind('File')
+kindSymbol = MatchKind('Symbol')
+kindSelected = MatchKind('Selected')
+kindQuote = MatchKind('Quote')
+kindCtags = MatchKind('Ctags')
 
 class MatchArea:
 

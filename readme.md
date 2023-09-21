@@ -4,13 +4,6 @@
 
 了解 RunSnippetCommand 或 JumpTo 插件请继续阅读本文。
 
-Add some material for studing Linux bash script programming and Vim
-
-- [Linux Command Line and Shell Scripting Bible, 3rd Edition, markdown version](material/linux_cli_script_bible.md)
-- [bash 5.1 manual, markdown version](material/bash.5.1.md)
-- [Vim flavor](material/vim_flavor.md)
-
-
 快速安装 RunSnippet：
 
 1. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> 打开 Sublime Text 命令调板；
@@ -130,7 +123,7 @@ print("*" * 80)
 ```
 
 
-Sublime Text 4 插件宿主支持 Python 3.3、3.8，但在 Packages 目录安装的插件默认是 Plugin-Host 3.3，某些 Python 3.8 新功能不能使用。
+Sublime Text 4 插件宿主支持 Python 3.3、3.8，但在 Packages 目录安装的插件默认是 Plugin-Host 3.3，某些 Python 3.8 新功能不能使用，插件可以在 .python-version 文件设置 Python 版本。而用户目录下的插件默认为 Python 3.8。
 
 RunSnippetCommand 插件实现代码，以下是基于 Python 3.8 的语法，可以根据 Sublime 选择器实现更多语言的支持，包括 C/C++，只需要配置好编译器待调用即可：
 
