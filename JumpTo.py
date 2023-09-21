@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from . import Settings
 from .RunSnippet import Logger
 
+
 class JumpToCommand(TextCommand, ViewEventListener):
 
     def __init__(self, *args):
@@ -22,16 +23,16 @@ class JumpToCommand(TextCommand, ViewEventListener):
         text = ctx.text
         kind = ctx.kind
         symbol = ""
+
         if (kind == kindSelected) and None is re.search(r".+[\. /\\].+", text):
             symbol = "@"
         elif (kind == kindCtags):
             return self.ctags(text)
         elif (kind == kindSymbol):
-            print(ctx.toString())
             self.view.sel().clear()
             self.view.sel().add(Region(ctx.begin, ctx.end))
             win.run_command("copy",)
-            win.run_command('goto_symbol_in_project', {'overlay':'goto'}) # `run`
+            win.run_command('goto_symbol_in_project', {'overlay':'goto'})
             return win.run_command('paste',)
             # "goto_definition", {"side_by_side": True, "clear_to_right": True} )
         elif text.startswith("http") or text.startswith("file://"):
@@ -185,6 +186,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
 # def plugin_unloaded() -> None:
 #     print("plugin unloaded")
 
+
 class MatchKind: 
     def __init__(self, kind:str):
         self.kind = kind
@@ -197,6 +199,7 @@ kindSymbol = MatchKind('Symbol')
 kindSelected = MatchKind('Selected')
 kindQuote = MatchKind('Quote')
 kindCtags = MatchKind('Ctags')
+
 
 class MatchArea:
 
