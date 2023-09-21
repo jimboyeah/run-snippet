@@ -46,9 +46,10 @@ class IndexRowsCommand(sublime_plugin.TextCommand):
       index = 0
       lines = view.lines(region)
       alllines+=(lines) # list extend
+      digi = len(str(len(alllines)))
       for region in lines:
         index += 1
-        nums.append(index)
+        nums.append(str(index).rjust(digi, "0")) # .zfill(3)
 
     # print(alllines)
     view.sel().clear()

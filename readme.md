@@ -277,6 +277,7 @@ class RunSnippetCommand(TextCommand):
 - [x] 备选，将字符串作为文件引，如 “some document.md like a keyword"
 - [x] Vim CTags in-file jump
 - [ ] Cross file jumping like Vim CTags
+- [x] 带反引号的符号进行全局符号跳转，如 `global`。
 
 因为 Sublime 文件跳转有个临时状态，文件并没有完全确定打开，此时按方向键及回车之外的键，都会撤消文件的打开。所以，带标签的自动定位还需要寻求其它解决办法。
 
