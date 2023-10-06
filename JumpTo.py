@@ -128,9 +128,14 @@ class JumpToCommand(TextCommand, ViewEventListener):
         rp = line[offset:] or ""
         lp = line[0:offset] or ""
 
+        r = rp.find("`")
+        t = lp.rfind("`")
+        if r >= 0 and t >= 0:
+            return MatchArea(kindSymbol, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+
         r = rp.find("|")
         t = lp.rfind("|")
-        if r >= 0 and t >= 0:#`abcde`
+        if r >= 0 and t >= 0:
             return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         r = rp.find("]")
@@ -153,19 +158,10 @@ class JumpToCommand(TextCommand, ViewEventListener):
         if r >= 0 and t >= 0:
             return MatchArea(kindQuote, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
-        r = rp.find("`")
-        t = lp.rfind("`")
-        if r >= 0 and t >= 0:
-            return MatchArea(kindSymbol, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
-
         r = rp.find("*")
         t = lp.rfind("*")
         if r >= 0 and t >= 0:
             return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
-
-        t = lp.find(' ')
-        if t == 1:
-            return MatchArea(kindSpaced, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
 
         t = lp.rfind(' ')
         r = rp.find(' ')
