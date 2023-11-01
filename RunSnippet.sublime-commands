@@ -1,0 +1,47 @@
+// RunSnippet.sublime-commands
+[
+    {
+        "caption": "RunSnippet: Regexp to Selection",
+        "command": "regexp_selection",
+        // "args": {"regexp":"selection by regular expression"}
+    },
+    // ************************************ //
+    {
+        "caption": "RunSnippet: SendTo",
+        "command": "send_to",
+        "args": {}
+    },
+    {
+        "caption": "RunSnippet: Run Snippet code",
+        "command": "run_snippet",
+    },
+    {
+        "caption": "RunSnippet: Jupm to ...",
+        "command": "jump_to",
+    },
+    {
+        "caption": "RunSnippet: Open Result Panel",
+        "command": "show_panel",
+        "args":  {"panel": "output.exec"},
+    },
+    {
+        "caption": "RunSnippet: First Column",
+        "command": "first_column",
+        "args": {"paths": [],"files": []},
+
+    },
+    {
+        "caption": "RunSnippet: Index Rows",
+        "command": "index_rows",
+        "args": {"paths": [],"files": []},
+    },
+    {
+        "caption": "RunSnippet: Edit Settings",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/RunSnippet/Default.sublime-keymap",
+            "user_file": "${packages}/User/Default ($platform).sublime-keymap",
+            "default": "[\n\t$0\n]\n",
+        }
+    }
+]

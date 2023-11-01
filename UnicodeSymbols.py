@@ -50,7 +50,7 @@ class SymbolsListener(sublime_plugin.EventListener):
         # print("VLL: on_query_completions [%s] [%s] [%s]" % (view, prefix, locations))
         rgn = view.sel()[0]
         scope = view.scope_name(rgn.a)
-        print("⚠scope_name", scope)
+        # print("⚠scope_name", scope)
         if scope.find("string.quoted") == -1 and scope.find("source.") != -1:
             return
         return [] or [

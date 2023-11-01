@@ -1,6 +1,6 @@
 # 🚩 Readme Fist
 
-学习 Sublime Text 插件开发，请参考 [Sublime API 探索](APIs.md)
+学习 Sublime Text 插件开发，请参考 [Sublime API 探索](https://github.com/Jeangowhy/opendocs/blob/main/sublime.md)
 
 了解 RunSnippetCommand 或 JumpTo 插件请继续阅读本文。
 
@@ -26,13 +26,15 @@
 
     git clone git@github.com/jimboyeah/run-snippet.git
 
-Plugin functions:
+Plugin functions, Open Command Palette (Ctrl+Shift+P), to find `RunSnippet:`:
 
-- 🡒 RunSnippetCommand: Press F6 to run Python code snippet at cursor in md file
-- 🡒 FirstColumnCommand: Press F1 move selections to column one
-- 🡒 IndexRowCommand: Press F5 generate Index No. for selected text
-- 🡒 SymbolsListener: Unicode Symbols input try: xHelp or xMathSum <kbd>⮀|</kbd> for `∑`
-- 🡒 SendToCommand: Send file between Sublime Text window
+- 🡒 `RegexpSelection`: Mutiple Selections by Regular Expression
+    ![cover.jpg](cover.jpg)
+- 🡒 `RunSnippetCommand`: Press F6 to run Python code snippet at cursor in md file
+- 🡒 `FirstColumnCommand`: Press F1 move selections to column one
+- 🡒 `IndexRowCommand`: Press F5 generate Index No. for selected text
+- 🡒 `SymbolsListener`: Unicode Symbols input try: xHelp or xMathSum <kbd>⮀|</kbd> for `∑`
+- 🡒 `SendToCommand`: Send file between Sublime Text window
 
     - 1. sublime.dymenu = "Temporaty data used for plugin after reloaded"
     - 2. modify Context.sublime-menu
