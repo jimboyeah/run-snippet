@@ -10,6 +10,26 @@
         "command": "regexp_selection",
         "args": {"regexp":"", "history":-1},
     },
+    {
+        "caption": "RunSnippet: Regexp to Selection [Java Generics]",
+        "command": "regexp_selection",
+        "args": {"regexp":"(\\w+\\.)*(\\w+\\.?)?<[A-z<> ,?]+?>"},
+    },
+    {
+        "caption": "RunSnippet: Regexp to Selection [reStructuredText Section Title]",
+        "command": "regexp_selection",
+        "args": {"regexp":"\\n\\n(?=[-+=#~.`'\"^*]{3, })([-+=#~.`'\"^*]+)\\n.+\\n\\1"},
+    },
+    {
+        "caption": "RunSnippet: Regexp to Selection [reStructuredText Subtitle]",
+        "command": "regexp_selection",
+        "args": {"regexp":"\\n\\n(?![-+=#~.`'\"^*]{3, }).+\\n(?=[-+=#~.`'\"^*]{3,}).+"},
+    },
+    {
+        "caption": "RunSnippet: Regexp to Selection [reStructuredText paragraphs begin]",
+        "command": "regexp_selection",
+        "args": {"regexp":"\\n\\n(?=[^-+=#~.'\"^*]{3, })[^ ]+.+\\n(?![-+=#~.'\"^*]{3, })"},
+    },
     // ************************************ //
     {
         "caption": "RunSnippet: SendTo",
