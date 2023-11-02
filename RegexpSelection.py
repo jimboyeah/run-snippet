@@ -10,12 +10,33 @@ class RegexpSelection(sp.WindowCommand):
         (res, regions) = RegexpSelection.find_all(regexp)
         view = self.window.active_view()
         if view:
-            view.sel().clear()
-            view.sel().add_all(iter(regions))
+            selection = view.sel()
+            the1st = selection[0]
+            selection.clear()
+            if the1st.a == the1st.b:
+                selection.add_all(iter(regions))
+                return
+
+            mi = min(the1st.a, the1st.b)
+            mx = max(the1st.a, the1st.b)
+            for it in regions:
+                if mi < it.a < mx:
+                    selection.add(it)
 
     def input(self, args):
         print("regexp_selection input:", args)
         return SimpleInputHandler()
+
+    def validate(self, text, event):
+        print("regexp_selection validate:", event)
+        return True
+
+    def confirm(self, text, event):
+        print("regexp_selection confirm:", event)
+        return True
+
+    def want_event(self) -> bool:
+        return True
 
     @classmethod
     def find_all (cls, regexp: str):
