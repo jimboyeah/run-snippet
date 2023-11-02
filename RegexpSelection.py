@@ -2,10 +2,12 @@ import sublime
 import sublime_plugin as sp
 from sublime import *
 from sublime_plugin import *
+from typing import Optional, TYPE_CHECKING
+
 
 class RegexpSelection(sp.WindowCommand):
 
-    # Java Generics: (\w+\.)*(\w+\.?)?<[A-z<> ,?]+>
+    # Java Generics: (\w+\.)*(\w+\.?)?<[A-z<> ,?]+?>
     # reStructuredText 
     # Section Title: \n\n(?=[-+=#~.`'"^*]{3, })([-+=#~.`'"^*]+)\n.+\n\1
     # Subtitle: \n\n(?![-+=#~.`'"^*]{3, }).+\n(?=[-+=#~.`'"^*]{3,}).+
@@ -15,9 +17,12 @@ class RegexpSelection(sp.WindowCommand):
     # history: list[str] = list()
     history = list()
 
-    def run(self, regexp:str):
-        print("regexp_selection run:", regexp, self.window)
-        self.history.append(regexp)
+    def run(self, regexp:str, history = 0):
+        if history != 0 and history >= -len(self.history) and history < len(self.history):
+            regexp = self.history[history]
+        else:
+            self.history.append(regexp)
+        print("regexp_selection run:", regexp, history)
         (res, regions) = RegexpSelection.find_all(regexp)
         view = self.window.active_view()
         if view:
@@ -36,7 +41,8 @@ class RegexpSelection(sp.WindowCommand):
 
     def input(self, args):
         print("regexp_selection input:", args)
-        return SimpleInputHandler(self.history[-1] if len(self.history) else "")
+        if args.get('history') is None:
+            return SimpleInputHandler(self.history[-1] if len(self.history) else "")
 
     def validate(self, text, event):
         print("regexp_selection validate:", event)
@@ -75,6 +81,10 @@ class SimpleInputHandler(sp.TextInputHandler):
 
     def initial_text(self):
         return self.default
+
+    def next_input(self, args) -> Optional[CommandInputHandler]:
+        print("RegexpSelection next_input", args)
+        return super().next_input(args)
 
     def initial_selection(self) -> list:
         sel: list[tuple[int, int]] = list()

@@ -3,7 +3,12 @@
     {
         "caption": "RunSnippet: Regexp to Selection",
         "command": "regexp_selection",
-        // "args": {"regexp":"selection by regular expression"}
+        // "args": {"regexp":"selection by regular expression"},
+    },
+    {
+        "caption": "RunSnippet: Regexp to Selection [redo last]",
+        "command": "regexp_selection",
+        "args": {"regexp":"", "history":-1},
     },
     // ************************************ //
     {
