@@ -5,7 +5,11 @@ from sublime_plugin import *
 
 class RegexpSelection(sp.WindowCommand):
 
-    # <?(\w+\.){0,}(\w+\.?)?<[A-Z\<\>,\?]+>
+    # Java Generics: (\w+\.)*(\w+\.?)?<[A-z<> ,?]+>
+    # reStructuredText 
+    # Section Title: \n\n(?=[-+=#~.`'"^*]{3, })([-+=#~.`'"^*]+)\n.+\n\1
+    # Subtitle: \n\n(?![-+=#~.`'"^*]{3, }).+\n(?=[-+=#~.`'"^*]{3,}).+
+    # paragraphs begin: \n\n(?=[^-+=#~.'"^*]{3, })[^ ]+.+\n(?![-+=#~.'"^*]{3, })
     # Type Hint cause error under Python 3.8: TypeError 'type' object is not subscriptable
     # def initial_selection(self) -> list[tuple[int, int]]:
     # history: list[str] = list()
@@ -18,7 +22,7 @@ class RegexpSelection(sp.WindowCommand):
         view = self.window.active_view()
         if view:
             selection = view.sel()
-            the1st = selection[0]
+            the1st = selection[0] if len(selection) else Region(0)
             selection.clear()
             if the1st.a == the1st.b:
                 selection.add_all(iter(regions))
@@ -81,5 +85,5 @@ class SimpleInputHandler(sp.TextInputHandler):
         if text is None or text == "":
             return ""
         (res, regions) = RegexpSelection.find_all(text)
-        return sublime.Html("<H3>Matchs: {} Regions for {}</H3>"
-            .format(len(regions), res))
+        return sublime.Html("<hr><p>Matchs: {} Regions for {} ... </p>"
+            .format(len(regions), res[0:3]))
