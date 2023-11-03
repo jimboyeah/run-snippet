@@ -11,6 +11,11 @@
         "args": {"regexp":"", "history":-1},
     },
     {
+        "caption": "RunSnippet: Regexp to Selection [empty]",
+        "command": "regexp_selection",
+        "args": {"regexp":""},
+    },
+    {
         "caption": "RunSnippet: Regexp to Selection [Java Generics]",
         "command": "regexp_selection",
         "args": {"regexp":"(\\w+\\.)*(\\w+\\.?)?<[A-z<> ,?]+?>"},

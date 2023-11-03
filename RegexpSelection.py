@@ -7,17 +7,18 @@ from typing import Optional, TYPE_CHECKING
 
 class RegexpSelection(sp.WindowCommand):
 
-    # Type Hint cause error under Python 3.8: TypeError 'type' object is not subscriptable
+    # Type Hint cause error under Python 3.8.12: TypeError 'type' object is not subscriptable
+    # Python 3.10 - PEP 604: New Type Union Operator ``X | Y``
     # def initial_selection(self) -> list[tuple[int, int]]:
     # history: list[str] = list()
     history = list()
 
     def run(self, regexp:str, history = 0):
-        if history != 0 and history >= -len(self.history) and history < len(self.history):
+        if self.has_history(history):
             regexp = self.history[history]
         else:
             self.history.append(regexp)
-        print("regexp_selection run:", regexp, history)
+        print("RegexpSelection run:", regexp, history)
         (res, regions) = RegexpSelection.find_all(regexp)
         view = self.window.active_view()
         if view:
@@ -34,17 +35,27 @@ class RegexpSelection(sp.WindowCommand):
                 if mi < it.a < mx:
                     selection.add(it)
 
-    def input(self, args):
-        print("regexp_selection input:", args)
-        if args.get('history') is None and args.get('regexp') is None:
-            return SimpleInputHandler(self.history[-1] if len(self.history) else "")
+    def has_history(self, index):
+        if index != None and index != 0 and \
+          index >= -len(self.history) and index < len(self.history):
+            return self.history[index] != ""
+        return False
 
-    def validate(self, text, event):
-        print("regexp_selection validate:", event)
+    def input(self, args):
+        print("RegexpSelection input:", args)
+        regexp = args.get('regexp')
+        history = args.get('history')
+        args['regexp'] = "rewrited"
+        last = self.has_history(history)
+        if (history is None or not last ) and (regexp is None or regexp == ""):
+            return RegexpInputHandler(self.history[-1] if len(self.history) else "")
+
+    def validate(self, text: str) -> bool:
+        print("RegexpSelection validate:", text)
         return True
 
-    def confirm(self, text, event):
-        print("regexp_selection confirm:", event)
+    def confirm(self, *event):
+        print("RegexpSelection confirm:", event)
         return True
 
     def want_event(self) -> bool:
@@ -62,14 +73,20 @@ class RegexpSelection(sp.WindowCommand):
         return (res, regions)
 
 
-class SimpleInputHandler(sp.TextInputHandler):
+class RegexpInputHandler(sp.TextInputHandler):
 
     def __init__(self, default:str) -> None:
         super().__init__()
         self.default = default
 
-    def name(self): # args name to transport data in command.run(...)
-        return "regexp"
+
+    # args name to transport data in command.run(self, XXX, YYY...)
+    # or use super implementation:
+    #     class XXXInputHandler(subime_plugin.TextInputHandler)
+    def name(self) -> str:
+        name = super().name()
+        print("RegexpSelection name:", name)
+        return name
 
     def placeholder(self): # a text show as backgroud of input box in GUI
         return "Text as RegexpSelection" 

@@ -6,32 +6,14 @@ from sublime import *
 from sublime_plugin import *
 from datetime import datetime, timedelta
 
-'''
-Config Context.sublime-menu and sbulime-keymap:
-[
-    {
-        "caption": "Run Snippet code",
-        "command": "run_snippet",
-        "mnemonic": "R",
-        "id": "run_snippet",
-        "keys": ["f6"], 
-    },
-        {
-        "caption": "Jupm to ...",
-        "command": "jump_to",
-        "mnemonic": "j",
-        "id": "jump_to",
-        "keys": ["f9"], 
-    },
-]
-'''
-
 class RunSnippetCommand(TextCommand):
     __dict__ = ['lang_type','code_snippets']
     coderegion = None
     selectorActive = None
     selectors = { "source.bash": "execute_bash",
          "text.html.markdown": "execute_bash",
+         "text.restructured": "execute_bash",
+         "source.shell.bash": "execute_bash",
          "source.python":"execute_py"}
 
     def __init__(self, view):
@@ -56,6 +38,7 @@ class RunSnippetCommand(TextCommand):
     def execute_bash(self, region:Region):
         view = self.view
         code = view.substr(region) or view.substr(view.line(region))
+        code = code.replace('\n', ";").replace(';;', ';')
         print("execute_bash:", region, code[0:40], "...")
         (arg, shell) = ("/c", "C:/Windows/System32/cmd.exe")
         (arg, shell) = ("-c", "C:/msys64/usr/bin/bash.exe")
