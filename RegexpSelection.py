@@ -2,16 +2,21 @@ import sublime
 import sublime_plugin as sp
 from sublime import *
 from sublime_plugin import *
-from typing import Optional, TYPE_CHECKING
+import typing
+from typing import Optional, TypedDict, List
+
+
+class History(List[str]):
+    pass
 
 
 class RegexpSelection(sp.WindowCommand):
 
     # Type Hint cause error under Python 3.8.12: TypeError 'type' object is not subscriptable
+    # Python 3.8 :class:`typing.Protocol` :pep:`544` Structural subtyping (static duck typing) 
     # Python 3.10 - PEP 604: New Type Union Operator ``X | Y``
-    # def initial_selection(self) -> list[tuple[int, int]]:
-    # history: list[str] = list()
-    history = list()
+    # use List, TypedDict ... instead of ``history: list[str] = list()``
+    history: History = History()
 
     def run(self, regexp:str, history = 0):
         if self.has_history(history):
