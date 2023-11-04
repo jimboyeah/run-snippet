@@ -10,6 +10,19 @@ class History(List[str]):
     pass
 
 
+class Modifiers(TypedDict):
+
+    alt: bool
+    ctrl: bool
+    primary: bool
+    shift: bool
+
+
+class Event():
+
+    modifier_keys: Modifiers
+
+
 class RegexpSelection(sp.WindowCommand):
 
     # Type Hint cause error under Python 3.8.12: TypeError 'type' object is not subscriptable
@@ -50,21 +63,11 @@ class RegexpSelection(sp.WindowCommand):
         print("RegexpSelection input:", args)
         regexp = args.get('regexp')
         history = args.get('history')
-        args['regexp'] = "rewrited"
         last = self.has_history(history)
+        if regexp == "history":
+            return HistoryInputHandler()
         if (history is None or not last ) and (regexp is None or regexp == ""):
             return RegexpInputHandler(self.history[-1] if len(self.history) else "")
-
-    def validate(self, text: str) -> bool:
-        print("RegexpSelection validate:", text)
-        return True
-
-    def confirm(self, *event):
-        print("RegexpSelection confirm:", event)
-        return True
-
-    def want_event(self) -> bool:
-        return True
 
     @classmethod
     def find_all (cls, regexp: str):
@@ -84,7 +87,6 @@ class RegexpInputHandler(sp.TextInputHandler):
         super().__init__()
         self.default = default
 
-
     # args name to transport data in command.run(self, XXX, YYY...)
     # or use super implementation:
     #     class XXXInputHandler(subime_plugin.TextInputHandler)
@@ -99,9 +101,36 @@ class RegexpInputHandler(sp.TextInputHandler):
     def initial_text(self):
         return self.default
 
-    def next_input(self, args) -> Optional[CommandInputHandler]:
-        print("RegexpSelection next_input", args)
-        return super().next_input(args)
+    def validate(self, text: str, event: Event) -> bool:
+        print("RegexpSelection validate:", text)
+        return True
+
+    def confirm(self, test:str, event: Event):
+        print("RegexpSelection confirm:", event)
+        return True
+
+    def want_event(self) -> bool:
+        return True
+
+    def next_input(self, args:dict) -> Optional[CommandInputHandler]:
+        regexp = args.get('regexp')
+        print("RegexpSelection next_input", regexp)
+        presets = [
+            '\n#+ +',
+            '(\\w+\\.)*(\\w+\\.?)?<[A-z<> ,?]+?>',
+            '\\n\\n(?=[-+=#~.`\'"^*]{3, })([-+=#~.`\'"^*]+)\\n.+\\n\\1',
+            '\\n\\n(?![-+=#~.`\'"^*]{3, }).+\\n(?=[-+=#~.`\'"^*]{3,}).+',
+            '\\n\\n(?=[^-+=#~.\'"^*]{3, })[^ ]+.+\\n(?![-+=#~.\'"^*]{3, })',
+            ' +def [_\\w][_\\w\\d]+ *\\(([_\\w][_\\w\\d]+,?)*\\)',
+            ' *class [_\\w][_\\w\\d]+ *\\(([_\\w][_\\w\\d]+.?,?)*\\)',
+            ' +class [_\\w][_\\w\\d]+ *\\(([_\\w][_\\w\\d]+.?,?)*\\)',
+            ' +class [_\\w][_\\w\\d]+ *\\(([_\\w][_\\w\\d]+,?)*\\)',]
+        if 'history test' == regexp:
+            for it in presets:
+                RegexpSelection.history.append(it)
+        elif 'history' != regexp:
+            return super().next_input(args)
+        return HistoryInputHandler()
 
     def initial_selection(self) -> list:
         sel: list[tuple[int, int]] = list()
@@ -112,5 +141,31 @@ class RegexpInputHandler(sp.TextInputHandler):
         if text is None or text == "":
             return ""
         (res, regions) = RegexpSelection.find_all(text)
-        return sublime.Html("<hr><p>Matchs: {} Regions for {} ... </p>"
-            .format(len(regions), res[0:3]))
+        his = len(RegexpSelection.history)
+        hint = ("Type 'history' to review [%s]." % his) if his else ""
+        return sublime.Html("{}<hr><p>Matchs: {} Regions for {} ... </p>"
+            .format(hint, len(regions), res[0:3]))
+
+
+# ImportError: cannot import name 'override' from 'typing' 
+# (C:\Program Files\Sublime Text\Lib\python3.8.zip\typing.pyc)
+# from typing import override, overload
+
+class HistoryInputHandler(sp.ListInputHandler) :
+
+    # @override
+    def name(self) -> str:
+        return "regexp"
+
+    # @override
+    def list_items(self) -> History:
+        history = RegexpSelection.history
+        print("RegexSelection list_items:", history)
+        return history if len(history) else History(["history list is empty"])
+
+    # @override
+    def preview(self, text) -> Html:
+        (res, regions) = RegexpSelection.find_all(text)
+        return sublime.Html("<hr><p>Matchs: {} Regions for {} .. </p>"
+            .format( len(regions), res[0:3]))
+

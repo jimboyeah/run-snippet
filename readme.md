@@ -28,7 +28,7 @@
 
 Plugin functions, Open Command Palette (Ctrl+Shift+P), to find `RunSnippet:`:
 
-- 🡒 `RegexpSelection`: Mutiple Selections by Regular Expression
+- 🡒 `RegexpSelection`: Mutiple Selections by Regular Expression with history
     ![cover.jpg](cover.jpg)
 - 🡒 `RunSnippetCommand`: Press F6 to run Python code snippet at cursor in md file
 - 🡒 `FirstColumnCommand`: Press F1 move selections to column one

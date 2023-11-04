@@ -11,6 +11,11 @@
         "args": {"regexp":"", "history":-1},
     },
     {
+        "caption": "RunSnippet: Regexp to Selection [history]",
+        "command": "regexp_selection",
+        "args": {"regexp":"history"},
+    },
+    {
         "caption": "RunSnippet: Regexp to Selection [empty]",
         "command": "regexp_selection",
         "args": {"regexp":""},
