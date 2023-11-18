@@ -74,10 +74,13 @@ class RegexpSelection(sp.WindowCommand):
         win  = sublime.active_window()
         view = win.active_view()
         res: list[str] = list()
-        fmt: str = "$0"
+        # fmt: str = "$0"
+        fmt = None
         regions: list[Region] = list()
         if view:
             regions = view.find_all(regexp, FindFlags.NONE, fmt, res  )
+            for it in regions[0:3]:
+                res.append(view.substr(it))
         return (res, regions)
 
 
@@ -144,7 +147,7 @@ class RegexpInputHandler(sp.TextInputHandler):
         his = len(RegexpSelection.history)
         hint = ("Type 'history' to review [%s]." % his) if his else ""
         return sublime.Html("{}<hr><p>Matchs: {} Regions for {} ... </p>"
-            .format(hint, len(regions), res[0:3]))
+            .format(hint, len(regions), res))
 
 
 # ImportError: cannot import name 'override' from 'typing' 
@@ -167,5 +170,5 @@ class HistoryInputHandler(sp.ListInputHandler) :
     def preview(self, text) -> Html:
         (res, regions) = RegexpSelection.find_all(text)
         return sublime.Html("<hr><p>Matchs: {} Regions for {} .. </p>"
-            .format( len(regions), res[0:3]))
+            .format( len(regions), res))
 
