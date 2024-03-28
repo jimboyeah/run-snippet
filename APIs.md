@@ -1,1 +1,1 @@
-C:/coding/md/opendocs/sublime.md
+/c/coding/md/opendocs/sublime.md

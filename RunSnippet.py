@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import pathlib
 import sublime_api as sapi
 from sublime import *
 from sublime_plugin import *
@@ -11,9 +12,11 @@ class RunSnippetCommand(TextCommand):
     coderegion = None
     selectorActive = None
     selectors = { "source.bash": "execute_bash",
+         "source.shell.bash": "execute_bash",
+         "markup.raw.block.markdown":"execute_bash",
          "text.html.markdown": "execute_bash",
          "text.restructured": "execute_bash",
-         "source.shell.bash": "execute_bash",
+         # "source.dosbatch":"execute_cmd",
          "source.python":"execute_py"}
 
     def __init__(self, view):
@@ -39,7 +42,8 @@ class RunSnippetCommand(TextCommand):
         view = self.view
         code = view.substr(region) or view.substr(view.line(region))
         code = code.replace('\n', ";").replace(';;', ';')
-        print("execute_bash:", region, code[0:40], "...")
+        cwd = pathlib.Path(view.file_name() or ".").parent
+        print("execute_bash:", region, code[0:40], "...", cwd)
         (arg, shell) = ("/c", "C:/Windows/System32/cmd.exe")
         (arg, shell) = ("-c", "C:/msys64/usr/bin/bash.exe")
         env = {"PATH":"C:/msys64/usr/bin/"}
@@ -49,6 +53,7 @@ class RunSnippetCommand(TextCommand):
         # pid = os.spawnle(os.P_NOWAIT, shell, "'%s %s'" %(arg, code), env)
         # pid = os.spawnve(os.P_NOWAIT, shell, ["'%s %s'" %(arg, code)], env)
         # for bash shell
+        os.chdir(cwd)
         pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s"%(code)])
         # pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s'" %(code)])
         # pid = os.spawnle(os.P_NOWAIT, shell, shell, arg, "'%s'" %(code), env)
@@ -113,10 +118,32 @@ class RunSnippetCommand(TextCommand):
             for it in self.selectors:
                 if scope.find(it)>-1:
                     self.selectorActive = it
-                    self.coderegion = region
+                    self.coderegion = self.expansion_region(region)
                     if not execute: return True
         self.selectorActive = None
         return False
+
+
+    def expansion_region(self, region:Region, increment = False):
+        view = self.view
+        scope = view.scope_name(region.a).split().pop()
+
+        while region.a > 0:
+            expansion = view.line(region.a-1)
+            if view.scope_name(expansion.a).find(scope) == -1:
+                break
+            region.a = expansion.a
+
+        while region.b < view.size():
+            expansion = view.line(region.b+1)
+            if view.scope_name(expansion.b).find(scope) == -1:
+                break
+            region.b = expansion.b
+
+        if increment:
+            view.sel().add(region)
+
+        return region
 
 
     def lookup_boundary(self, region, tag, direction=max, maxline= 300) -> Region or None:

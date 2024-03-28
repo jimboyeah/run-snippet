@@ -37,7 +37,7 @@ class IndexRowsCommand(sublime_plugin.TextCommand):
     circles = '🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩'
     circles = '🄌➊➋➌➍➎➏➐➑➒➓⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴'
     scope = view.scope_name(regionset[0].a)
-    circled = scope.find('markdown')>-1 and scope.find('source')>-1
+    circled = scope.find('markup.raw.block.markdown')>-1 or scope.find('source')>-1
 
     nums = []
     alllines = []
