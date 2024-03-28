@@ -11,13 +11,15 @@ class RunSnippetCommand(TextCommand):
     __dict__ = ['lang_type','code_snippets']
     coderegion = None
     selectorActive = None
-    selectors = { "source.bash": "execute_bash",
+    selectors = { 
+        "source.bash": "execute_bash",
          "source.shell.bash": "execute_bash",
          "markup.raw.block.markdown":"execute_bash",
-         "text.html.markdown": "execute_bash",
          "text.restructured": "execute_bash",
-         # "source.dosbatch":"execute_cmd",
-         "source.python":"execute_py"}
+         "source.dosbatch":"execute_cmd",
+         # "text.html.markdown": "execute_bash",
+         "source.python":"execute_py",
+         }
 
     def __init__(self, view):
         self.view = view
@@ -29,7 +31,7 @@ class RunSnippetCommand(TextCommand):
             return
 
         method = getattr(self, self.selectors[self.selectorActive], None)
-        print("run snippet agent", self.selectorActive, self.coderegion, method, isinstance(method, type(self.run)))
+        print("run snippet agent", self.selectorActive, self.coderegion, method)
         if method and isinstance(method, type(self.run)):
             method(self.coderegion)
 
@@ -37,6 +39,9 @@ class RunSnippetCommand(TextCommand):
         ok = self.snippet_test()
         Logger.message("RunSnippet is_enabled(self, edit): %s" % ok)
         return ok 
+
+    def execute_cmd(self, region:Region):
+        Logger.message("RunSnippet not yet support: %s" % self.selectorActive)
 
     def execute_bash(self, region:Region):
         view = self.view
@@ -114,19 +119,18 @@ class RunSnippetCommand(TextCommand):
 
         for region in regionset:
             scope = self.view.scope_name(region.a)
-            print("RunSnippet test:", scope)
             for it in self.selectors:
                 if scope.find(it)>-1:
+                    print("RunSnippet scope test:", it)
                     self.selectorActive = it
-                    self.coderegion = self.expansion_region(region)
+                    self.coderegion = self.expansion_region(self.selectorActive, region)
                     if not execute: return True
         self.selectorActive = None
         return False
 
 
-    def expansion_region(self, region:Region, increment = False):
+    def expansion_region(self, scope:str, region:Region, increment = False):
         view = self.view
-        scope = view.scope_name(region.a).split().pop()
 
         while region.a > 0:
             expansion = view.line(region.a-1)
