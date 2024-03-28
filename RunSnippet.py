@@ -45,8 +45,9 @@ class RunSnippetCommand(TextCommand):
 
     def execute_bash(self, region:Region):
         view = self.view
+        regex = re.compile('^#.*\n', re.RegexFlag.MULTILINE)
         code = view.substr(region) or view.substr(view.line(region))
-        code = code.replace('\n', ";").replace(';;', ';')
+        code = regex.sub('', code).replace(';;', ';')
         cwd = pathlib.Path(view.file_name() or ".").parent
         print("execute_bash:", region, code[0:40], "...", cwd)
         (arg, shell) = ("/c", "C:/Windows/System32/cmd.exe")
