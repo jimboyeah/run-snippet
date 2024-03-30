@@ -7,19 +7,20 @@ from sublime import *
 from sublime_plugin import *
 from datetime import datetime, timedelta
 
+
 class RunSnippetCommand(TextCommand):
-    __dict__ = ['lang_type','code_snippets']
+    __dict__ = ['lang_type', 'code_snippets']
     coderegion = None
     selectorActive = None
     selectors = { 
         "source.bash": "execute_bash",
-         "source.shell.bash": "execute_bash",
-         "markup.raw.block.markdown":"execute_bash",
-         "text.restructured": "execute_bash",
-         "source.dosbatch":"execute_cmd",
-         # "text.html.markdown": "execute_bash",
-         "source.python":"execute_py",
-         }
+        "source.shell.bash": "execute_bash",
+        "markup.raw.block.markdown": "execute_bash",
+        "text.restructured": "execute_bash",
+        "source.dosbatch": "execute_cmd",
+        # "text.html.markdown": "execute_bash",
+        "source.python": "execute_py",
+        }
 
     def __init__(self, view):
         self.view = view
@@ -40,10 +41,10 @@ class RunSnippetCommand(TextCommand):
         Logger.message("RunSnippet is_enabled(self, edit): %s" % ok)
         return ok 
 
-    def execute_cmd(self, region:Region):
+    def execute_cmd(self, region: Region):
         Logger.message("RunSnippet not yet support: %s" % self.selectorActive)
 
-    def execute_bash(self, region:Region):
+    def execute_bash(self, region: Region):
         view = self.view
         regex = re.compile('^#.*\n', re.RegexFlag.MULTILINE)
         code = view.substr(region) or view.substr(view.line(region))
@@ -52,7 +53,7 @@ class RunSnippetCommand(TextCommand):
         print("execute_bash:", region, code[0:40], "...", cwd)
         (arg, shell) = ("/c", "C:/Windows/System32/cmd.exe")
         (arg, shell) = ("-c", "C:/msys64/usr/bin/bash.exe")
-        env = {"PATH":"C:/msys64/usr/bin/"}
+        env = {"PATH": "C:/msys64/usr/bin/"}
         # os.execlp('bash', '-c', code) # this method will cause Sublime plugin-host exit.
         # ecode = os.system("bash -c '%s ; sleep 3'" % code)
         # for cmd shell
@@ -60,7 +61,7 @@ class RunSnippetCommand(TextCommand):
         # pid = os.spawnve(os.P_NOWAIT, shell, ["'%s %s'" %(arg, code)], env)
         # for bash shell
         os.chdir(cwd)
-        pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s"%(code)])
+        pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s" % (code)])
         # pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s'" %(code)])
         # pid = os.spawnle(os.P_NOWAIT, shell, shell, arg, "'%s'" %(code), env)
         # pid = os.spawnve(os.P_NOWAIT, shell, [shell, arg, "'%s'" % (code)], env)
@@ -69,50 +70,35 @@ class RunSnippetCommand(TextCommand):
         # (pid, ecode_shift8) = os.waitpid(pid, 0)
         # print("exit code: ", shell, arg, pid, ecode_shift8>>8)
 
-
-    def execute_py_(self, code):
+    def execute_py(self, region: Region):
+        scope = self.selectorActive
         window = active_window()
-        execpanel = window.find_output_panel("exec")
-        if execpanel is None:
-            execpanel = View(window.create_output_panel("exec", True))
+        view = self.view
+        code = view.substr(self.coderegion)
+
+        # execpanel = window.find_output_panel("exec")
+        # if execpanel is None:
+        #    execpanel = View(window.create_output_panel("exec", True))
+        execpanel = window.create_output_panel("exec", True)
 
         try:
-            print("execute_py: view[%s]" % execpanel.view_id)
+            print("execute_py: [%s]" % scope, self.coderegion, code)
             execpanel.settings().set("auto_indent", False)
             execpanel.sel().clear()
             execpanel.sel().add(Region(0))
-            execpanel.run_command("insert", {"characters":"""\n%s\n""" % ("⚡" * 40)})
+            print(repr(execpanel))
+            # execpanel.run_command("insert", {"characters": "\n%s\n" % ("⚡" * 40)})
             # code = compile(code, "string", "exec")
+            # execpanel.run_command("insert", {"characters": str(exec(code))})
+            oldout = sys.stdout
+            sys.stdout = Logger()
             exec(code)
+            sys.stdout = oldout
         except Exception as ex:
             print("execute_py error: %s" % ex)
             # print("execute_py error: {0}".format(ex))
             # print(f"tb: {ex.__traceback__}")
             raise
-
-    def execute_py(self, region:Region):
-        scope = self.selectorActive
-
-        if region.a != region.b:
-            code = self.view.substr(region)
-            print("snippet_python range:", scope, code[0:40], "...")
-            self.code_snippets.append(code)
-            self.execute_py_(code)
-        elif scope=="source.python":
-            code = self.view.substr(Region(0, self.view.size()))
-            print("snippet_python scope:", scope, code[0:40], "...")
-            self.execute_py_(code)
-        else:
-            (a, b) = self.view.full_line(region)
-            start = self.lookup_boundary(Region(a), "```py", min)
-            end = self.lookup_boundary(Region(a), "```", max)
-
-            if start != None and end:
-                codesnippet = Region(start.b+1, end.a-1)
-                code = self.view.substr(codesnippet)
-                print("snippet_python block:", scope, code[0:40], "...")
-                self.view.sel().add(codesnippet)
-                self.execute_py_(code)
 
     def snippet_test(self, execute=False):
         regionset = self.view.sel()
@@ -121,16 +107,16 @@ class RunSnippetCommand(TextCommand):
         for region in regionset:
             scope = self.view.scope_name(region.a)
             for it in self.selectors:
-                if scope.find(it)>-1:
+                if scope.find(it) > -1:
                     print("RunSnippet scope test:", it)
                     self.selectorActive = it
                     self.coderegion = self.expansion_region(self.selectorActive, region)
-                    if not execute: return True
+                    if not execute:
+                        return True
         self.selectorActive = None
         return False
 
-
-    def expansion_region(self, scope:str, region:Region, increment = False):
+    def expansion_region(self, scope: str, region: Region, increment=False):
         view = self.view
 
         while region.a > 0:
@@ -151,23 +137,10 @@ class RunSnippetCommand(TextCommand):
         return region
 
 
-    def lookup_boundary(self, region, tag, direction=max, maxline= 300) -> Region or None:
-        a = direction(region.a, region.b)
-
-        maxline = maxline-1
-        while a>1 and (maxline)>-1:
-            rgn = self.view.line(a)
-            line = self.view.substr(rgn)
-            a = direction(rgn.a-1, rgn.b+1)
-            if line.startswith(tag): return rgn
-            maxline -= 1
-
-        size = self.view.size()
-        if maxline==-1 or a==direction(-1, size+1): return None
-
-
 # Console Panel redirect
-name = "exec" # "TestPlugin_OutputPanel"
+name = "exec"  # "TestPlugin_OutputPanel"
+
+
 class Logger(sublime._LogWriter):
 
     @classmethod
