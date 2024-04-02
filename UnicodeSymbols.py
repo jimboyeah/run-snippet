@@ -128,21 +128,21 @@ xcombine:              \n\
             ("xCommonSymbol ₱", "Peso Sign", "₱"),
             ("xCommonSymbol ⌀", "Diameter Sign", "⌀"),
 
-            ('xcircuit ⏚', 'Earth ground', '⏚')
-            ('xcircuit ⏛', 'Fuse', '⏛')
-            ('xcircuit ⎐', 'Open-circuit-output l-type', '⎐')
-            ('xcircuit ⎑', 'Passive-pull-down-output', '⎑')
-            ('xcircuit ⎒', 'Passive-pull-up-output', '⎒')
-            ('xcircuit ⎓', 'Direct current form two', '⎓')
-            ('xcircuit ⎔', 'Software-function', '⎔')
-            ('xcircuit ⎍', 'Monostable', '⎍')
-            ('xcircuit ⎎', 'Hysteresis', '⎎')
-            ('xcircuit ⎏', 'Open-circuit-output h-type', '⎏')
-            ('xcircuit ⏾', 'Power sleep', '⏾')
-            ('xcircuit ⏻', 'Power', '⏻')
-            ('xcircuit ⏼', 'Power on-off', '⏼')
-            ('xcircuit ⏽', 'Power on', '⏽')
-            
+            ('xcircuit ⏚', 'Earth ground', '⏚'),
+            ('xcircuit ⏛', 'Fuse', '⏛'),
+            ('xcircuit ⎐', 'Open-circuit-output l-type', '⎐'),
+            ('xcircuit ⎑', 'Passive-pull-down-output', '⎑'),
+            ('xcircuit ⎒', 'Passive-pull-up-output', '⎒'),
+            ('xcircuit ⎓', 'Direct current form two', '⎓'),
+            ('xcircuit ⎔', 'Software-function', '⎔'),
+            ('xcircuit ⎍', 'Monostable', '⎍'),
+            ('xcircuit ⎎', 'Hysteresis', '⎎'),
+            ('xcircuit ⎏', 'Open-circuit-output h-type', '⎏'),
+            ('xcircuit ⏾', 'Power sleep', '⏾'),
+            ('xcircuit ⏻', 'Power', '⏻'),
+            ('xcircuit ⏼', 'Power on-off', '⏼'),
+            ('xcircuit ⏽', 'Power on', '⏽'),
+
             ('xcombineU0300 À', 'Diacritical Marks', 'À'),
             ('xcombineU0300 B́', 'Diacritical Marks', 'B́'),
             ('xcombineU0300 Ĉ', 'Diacritical Marks', 'Ĉ'),

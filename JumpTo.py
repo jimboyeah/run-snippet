@@ -187,6 +187,7 @@ class MatchKind:
     def __init__(self, kind:str):
         self.kind = kind
 
+
 kindSpaced = MatchKind('Spaced')
 kindBlock = MatchKind('Block')
 kindText = MatchKind('Text')
@@ -199,11 +200,12 @@ kindCtags = MatchKind('Ctags')
 
 class MatchArea:
 
-    def __init__(self, kind:MatchKind, text:str, begin:int, end:int):
+    def __init__(self, kind: MatchKind, text: str, begin: int, end: int):
         self.kind = kind
         self.text = text
         self.begin = begin
         self.end = end
 
     def toString(self):
-        return r'<MatchArea kind=%s text=%s [%d,%d]>' % (self.kind, self.text, self.begin, self.end)
+        return r'<MatchArea kind=%s text=%s [%d,%d]>' % (
+            self.kind, self.text, self.begin, self.end)

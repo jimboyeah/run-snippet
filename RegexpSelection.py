@@ -47,6 +47,7 @@ class RegexpSelection(sp.WindowCommand):
 
             # for a cursor point, not selction area
             if the1st.a == the1st.b:
+                selection.clear()
                 selection.add_all(iter(regions))
                 return
 
