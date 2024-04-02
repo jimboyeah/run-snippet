@@ -54,11 +54,10 @@ class RegexpSelection(sp.WindowCommand):
             # convert selection for all region
             targets: list[Region] = []
             for area in selection:
-                print("area", area)
                 mi = min(area.a, area.b)
                 mx = max(area.a, area.b)
                 for it in regions:
-                    if mi < it.a < mx:
+                    if mi <= it.a < mx:
                         targets.append(it)
 
             # don't clear selection before you need it
