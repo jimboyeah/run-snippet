@@ -109,6 +109,18 @@ xcombine:              \n\
                         → Combining Mark À  | B́  | Ĉ  | D̃  | Ē  | F̅ \n\
 xcombine:              \n\
                         → Combining Mark À  | B́  | Ĉ  | D̃  | Ē  | F̅ \n\
+xbox:                  \n\
+                        ┌ ─ ┬ ┐  ┏ ┳ ━ ┓  ╔ ╦ ═ ╗\n\
+                        │ │ │ │  ┣ ╋ ━ ┫  ╠ ╬ ═ ╣\n\
+                        ├ ─ ┼ ┤  ┃ ┃ ┃ ┃  ║ ║ ║ ║\n\
+                        └ ─ ┴ ┘  ┗ ┻ ━ ┛  ╚ ╩ ═ ╝\n\
+                        ╒ ╤ ╕  ╓ ╥ ╖   ┍ ┯ ┑  ┎ ┰ ┒\n\
+                        ╞ ╪ ╡  ╟ ╫ ╢   ┝ ┿ ┥  ┠ ╂ ┨\n\
+                        ╘ ╧ ╛  ╙ ╨ ╜   ┕ ┷ ┙  ┖ ┸ ┚\n\
+                        ╆ ╅   \n\
+                        ╄ ╃    ┢ ╈ ┪   ┟ ╁ ┧  ┮ ┭ \n\
+                        ┲ ┱    ╊ ╋ ╉   ┞ ╀ ┦  ┾ ┽ \n\
+                        ┺ ┹    ┡ ╇ ┩          ┶ ┵ \n\
 ```"),
 
             ("xCommonSymbol ℃", "Degree", "℃"),
@@ -127,6 +139,40 @@ xcombine:              \n\
             ("xCommonSymbol ¢", "Cent Sign", "¢"),
             ("xCommonSymbol ₱", "Peso Sign", "₱"),
             ("xCommonSymbol ⌀", "Diameter Sign", "⌀"),
+
+            ('xBoxStyleATop', '', '┌ ─ ┬ ┐'),
+            ('xBoxStyleAMij', '', '│ │ │ │'),
+            ('xBoxStyleAMid', '', '├ ─ ┼ ┤'),
+            ('xBoxStyleABot', '', '└ ─ ┴ ┘'),
+            ('xBoxStyleBTop', '', '┏ ┳ ━ ┓'),
+            ('xBoxStyleBMij', '', '┣ ╋ ━ ┫'),
+            ('xBoxStyleBMid', '', '┃ ┃ ┃ ┃'),
+            ('xBoxStyleBBot', '', '┗ ┻ ━ ┛'),
+            ('xBoxStyleCTop', '', '╔ ╦ ═ ╗'),
+            ('xBoxStyleCMij', '', '╠ ╬ ═ ╣'),
+            ('xBoxStyleCMid', '', '║ ║ ║ ║'),
+            ('xBoxStyleCBot', '', '╚ ╩ ═ ╝'),
+            ('xBoxStyleETop', '', '╒═╤═╕'),
+            ('xBoxStyleEMid', '', '╞═╪═╡'),
+            ('xBoxStyleEBot', '', '╘═╧═╛'),
+            ('xBoxStyleFTop', '', '┍━┯━┑'),
+            ('xBoxStyleFMid', '', '┝━┿━┥'),
+            ('xBoxStyleFBot', '', '┕━┷━┙'),
+            ('xBoxStyleGTop', '', '╓─╥─╖'),
+            ('xBoxStyleGMid', '', '╟─╫─╢'),
+            ('xBoxStyleGBot', '', '╙─╨─╜'),
+            ('xBoxStyleHTop', '', '┎─┰─┒'),
+            ('xBoxStyleHMid', '', '┠─╂─┨'),
+            ('xBoxStyleHBot', '', '┖─┸─┚'),
+            
+            ('xBlockBottomAligned ▁▃▄▇█', 'bottom aligned', ' ▁ ▂ ▃ ▄ ▅ ▆ ▇ █'),
+            ('xBlockLeftAligned ▉▊▋▌▍▎▏', 'left aligned', ' ▉ ▊ ▋ ▌ ▍ ▎ ▏'),
+            ('xBlockRightAligned ▐ ▕', 'right aligned', ' ▐ ▕'),
+            ('xBlockTopAligned ▔ ▀', 'top aligned', ' ▔ ▀'),
+            ('xBlockQuadrant ▘▝▗ ▖', 'quadrant', '▘▝ ▖▗'),
+            ('xBlock2Quadrants ▚ ▞', '2quadrants', '▚ ▞'),
+            ('xBlock3Quadrants ▙ ▟ ▛ ▜', '3quadrants ', '▙ ▟ ▛ ▜'),
+            ('xBlockBoxArt ░ ▒ ▓', 'Box Art', '░ ▒ ▓ ⦀ ⦙ ⦚ ⧘ ⧙ ⧚ ⧛'),
 
             ('xcircuit ⏚', 'Earth ground', '⏚'),
             ('xcircuit ⏛', 'Fuse', '⏛'),
