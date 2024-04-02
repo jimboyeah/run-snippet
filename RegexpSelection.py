@@ -25,33 +25,51 @@ class Event():
 
 class RegexpSelection(sp.WindowCommand):
 
-    # Type Hint cause error under Python 3.8.12: TypeError 'type' object is not subscriptable
-    # Python 3.8 :class:`typing.Protocol` :pep:`544` Structural subtyping (static duck typing) 
+    # Type Hint cause error under Python 3.8.12: 
+    #    TypeError 'type' object is not subscriptable
+    # Python 3.8 :class:`typing.Protocol` 
+    #   :pep:`544` Structural subtyping (static duck typing) 
     # Python 3.10 - PEP 604: New Type Union Operator ``X | Y``
     # use List, TypedDict ... instead of ``history: list[str] = list()``
     history: History = History()
 
-    def run(self, regexp:str, history = 0):
+    def run(self, regexp: str, history=0):
         if self.has_history(history):
             regexp = self.history[history]
         else:
             self.history.append(regexp)
         print("RegexpSelection run:", regexp, history)
         (res, regions) = RegexpSelection.find_all(regexp)
-        view = self.window.active_view()
+        view: View = self.window.active_view()
         if view:
             selection = view.sel()
             the1st = selection[0] if len(selection) else Region(0)
-            selection.clear()
+
+            # for a cursor point, not selction area
             if the1st.a == the1st.b:
                 selection.add_all(iter(regions))
                 return
 
-            mi = min(the1st.a, the1st.b)
-            mx = max(the1st.a, the1st.b)
-            for it in regions:
-                if mi < it.a < mx:
-                    selection.add(it)
+            # convert selection for all region
+            targets: list[Region] = []
+            for area in selection:
+                print("area", area)
+                mi = min(area.a, area.b)
+                mx = max(area.a, area.b)
+                for it in regions:
+                    if mi < it.a < mx:
+                        targets.append(it)
+
+            # don't clear selection before you need it
+            selection.clear()
+            selection.add_all(targets)
+
+            # Just for the 1st selection area
+            # mi = min(the1st.a, the1st.b)
+            # mx = max(the1st.a, the1st.b)
+            # for it in regions:
+            #     if mi < it.a < mx:
+            #         selection.add(it)
 
     def has_history(self, index):
         if index != None and index != 0 and \
@@ -66,27 +84,27 @@ class RegexpSelection(sp.WindowCommand):
         last = self.has_history(history)
         if regexp == "history":
             return HistoryInputHandler()
-        if (history is None or not last ) and (regexp is None or regexp == ""):
-            return RegexpInputHandler(self.history[-1] if len(self.history) else "")
+        if (history is None or not last) and (regexp is None or regexp == ""):
+            return Regexp(self.history[-1] if len(self.history) else "")
 
     @classmethod
-    def find_all (cls, regexp: str):
-        win  = sublime.active_window()
+    def find_all(cls, regexp: str):
+        win = sublime.active_window()
         view = win.active_view()
         res: list[str] = list()
         # fmt: str = "$0"
         fmt = None
         regions: list[Region] = list()
         if view:
-            regions = view.find_all(regexp, FindFlags.NONE, fmt, res  )
+            regions = view.find_all(regexp, FindFlags.NONE, fmt, res)
             for it in regions[0:3]:
                 res.append(view.substr(it))
         return (res, regions)
 
 
-class RegexpInputHandler(sp.TextInputHandler):
+class Regexp(sp.TextInputHandler):
 
-    def __init__(self, default:str) -> None:
+    def __init__(self, default: str) -> None:
         super().__init__()
         self.default = default
 
@@ -98,8 +116,8 @@ class RegexpInputHandler(sp.TextInputHandler):
         print("RegexpSelection name:", name)
         return name
 
-    def placeholder(self): # a text show as backgroud of input box in GUI
-        return "Text as RegexpSelection" 
+    def placeholder(self):  # a text show as backgroud of input box in GUI
+        return "Textregexp as RegexpSelection" 
 
     def initial_text(self):
         return self.default
@@ -108,14 +126,14 @@ class RegexpInputHandler(sp.TextInputHandler):
         print("RegexpSelection validate:", text)
         return True
 
-    def confirm(self, test:str, event: Event):
+    def confirm(self, test: str, event: Event):
         print("RegexpSelection confirm:", event)
         return True
 
     def want_event(self) -> bool:
         return True
 
-    def next_input(self, args:dict) -> Optional[CommandInputHandler]:
+    def next_input(self, args: dict) -> Optional[CommandInputHandler]:
         regexp = args.get('regexp')
         print("RegexpSelection next_input", regexp)
         presets = [
@@ -137,16 +155,17 @@ class RegexpInputHandler(sp.TextInputHandler):
 
     def initial_selection(self) -> list:
         sel: list[tuple[int, int]] = list()
-        sel.append( (int(0), len(self.default)) )
+        sel.append((int(0), len(self.default)) )
         return sel
 
-    def preview(self, text): # return some text/html preview on GUI
+    def preview(self, text):  # return some text/html preview on GUI
         if text is None or text == "":
             return ""
         (res, regions) = RegexpSelection.find_all(text)
         his = len(RegexpSelection.history)
         hint = ("Type 'history' to review [%s]." % his) if his else ""
-        return sublime.Html("{}<hr><p>Matchs: {} Regions for {} ... </p>"
+        return sublime.Html(
+            "{}<hr><p>Matchs: {} Regions for {} ... </p>"
             .format(hint, len(regions), res))
 
 
@@ -154,7 +173,7 @@ class RegexpInputHandler(sp.TextInputHandler):
 # (C:\Program Files\Sublime Text\Lib\python3.8.zip\typing.pyc)
 # from typing import override, overload
 
-class HistoryInputHandler(sp.ListInputHandler) :
+class HistoryInputHandler(sp.ListInputHandler):
 
     # @override
     def name(self) -> str:
@@ -169,6 +188,6 @@ class HistoryInputHandler(sp.ListInputHandler) :
     # @override
     def preview(self, text) -> Html:
         (res, regions) = RegexpSelection.find_all(text)
-        return sublime.Html("<hr><p>Matchs: {} Regions for {} .. </p>"
-            .format( len(regions), res))
-
+        return sublime.Html(
+            "<hr><p>Matchs: {} Regions for {} .. </p>"
+            .format(len(regions), res))
