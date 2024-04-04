@@ -44,7 +44,8 @@ class SendToCommand(WindowCommand):
             name = str(it.project_file_name())
             name = re.split(r"[/\\]", name)[-1]
             # if name == "None" or name is None:
-            name += " (%s)" % win.active_view().file_name()
+            if win.active_view():
+                name += " (%s)" % win.active_view().file_name()
             id = it.id()
             self.items.append(str(len(self.items)) + ("  [#%d]  " % id) + name)
 
