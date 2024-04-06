@@ -171,7 +171,7 @@ xbox:                  \n\
             ('xBoxStyleH ┎─┰─┒', '', '┎─┰─┒\n┠─╂─┨\n┖─┸─┚'),
             ('xBoxStyleHMid ┠─╂─┨', '', '┠─╂─┨'),
             ('xBoxStyleHBot ┖─┸─┚', '', '┖─┸─┚'),
-            ('xBoxRounded ╭ ╮ ╯ ╰', '', '╭ ╮ ╯ ╰'),
+            ('xBoxRounded ╭╮ ╰╯', '', '╭─╮\n│┼│\n╰─╯'),
 
             ('xBlockBottomAligned ▁▃▄▇█', 'bottom aligned', ' ▁ ▂ ▃ ▄ ▅ ▆ ▇ █'),
             ('xBlockLeftAligned ▉▊▋▌▍▎▏', 'left aligned', ' ▉ ▊ ▋ ▌ ▍ ▎ ▏'),

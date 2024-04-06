@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import pathlib
+import tempfile
 import sublime_api as sapi
 from sublime import *
 from sublime_plugin import *
@@ -44,16 +45,41 @@ class RunSnippetCommand(TextCommand):
     def execute_cmd(self, region: Region):
         Logger.message("RunSnippet not yet support: %s" % self.selectorActive)
 
+    def exit_status(self, exitcode: int):
+        status = {
+            '0': 'Successfully execute.',
+            '1': 'Catchall for general errors',
+            '2': 'Misuse of shell builtins',
+            '126': 'Command invoked cannot execute',
+            '127': '"command not found"',
+            '128': 'Invalid argument to exit',
+            '128+': 'Fatal error signal "%s"' % exitcode,
+            '130': 'Script terminated by Control-C',
+            '255': 'Exit status out of range',
+            }
+        if status.get(str(exitcode)):
+            return status[str(exitcode)]
+        elif 128 < exitcode < 255:
+            return status['128+']
+
+        return status['255']
+
     def execute_bash(self, region: Region):
         view = self.view
-        regex = re.compile('^#.*\n', re.RegexFlag.MULTILINE)
+
         code = view.substr(region) or view.substr(view.line(region))
-        code = regex.sub('', code).replace(';;', ';')
+        # regex = re.compile('^#.*\n', re.RegexFlag.MULTILINE)
+        # code = regex.sub('', code).replace(';;', ';')
+        tmp = tempfile.mktemp(".sh", "runsnippet-")
+        file = open(tmp, 'w')
+        file.writelines(code)
         cwd = pathlib.Path(view.file_name() or ".").parent
-        print("execute_bash:", region, code[0:40], "...", cwd)
+        print("bash@%s: [%s] %s\n" % (cwd, region, tmp), code[0:140], "...")
+
         (arg, shell) = ("/c", "C:/Windows/System32/cmd.exe")
         (arg, shell) = ("-c", "C:/msys64/usr/bin/bash.exe")
         env = {"PATH": "C:/msys64/usr/bin/"}
+
         # os.execlp('bash', '-c', code) # this method will cause Sublime plugin-host exit.
         # ecode = os.system("bash -c '%s ; sleep 3'" % code)
         # for cmd shell
@@ -61,7 +87,8 @@ class RunSnippetCommand(TextCommand):
         # pid = os.spawnve(os.P_NOWAIT, shell, ["'%s %s'" %(arg, code)], env)
         # for bash shell
         os.chdir(cwd)
-        pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s" % (code)])
+        pid = os.spawnv(os.P_NOWAIT, shell, [shell, tmp])
+        # print("bash shell return:", self.exit_status(pid))
         # pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s'" %(code)])
         # pid = os.spawnle(os.P_NOWAIT, shell, shell, arg, "'%s'" %(code), env)
         # pid = os.spawnve(os.P_NOWAIT, shell, [shell, arg, "'%s'" % (code)], env)
