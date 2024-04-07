@@ -73,7 +73,10 @@ class RunSnippetCommand(TextCommand):
         tmp = tempfile.mktemp(".sh", "runsnippet-")
         file = open(tmp, 'w')
         file.writelines(code)
+        file.close()
+
         cwd = pathlib.Path(view.file_name() or ".").parent
+        os.chdir(cwd)
         print("bash@%s: [%s] %s\n" % (cwd, region, tmp), code[0:140], "...")
 
         (arg, shell) = ("/c", "C:/Windows/System32/cmd.exe")
@@ -86,8 +89,11 @@ class RunSnippetCommand(TextCommand):
         # pid = os.spawnle(os.P_NOWAIT, shell, "'%s %s'" %(arg, code), env)
         # pid = os.spawnve(os.P_NOWAIT, shell, ["'%s %s'" %(arg, code)], env)
         # for bash shell
-        os.chdir(cwd)
-        pid = os.spawnv(os.P_NOWAIT, shell, [shell, tmp])
+        # Shebang supported
+        tmp = tmp.replace("\\", "/")
+        pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, tmp])
+        time.sleep(.6)  # wait bash to read tmp file, delay to delete.
+        os.remove(tmp)
         # print("bash shell return:", self.exit_status(pid))
         # pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s'" %(code)])
         # pid = os.spawnle(os.P_NOWAIT, shell, shell, arg, "'%s'" %(code), env)
