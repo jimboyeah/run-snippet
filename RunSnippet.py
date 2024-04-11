@@ -8,6 +8,8 @@ from sublime import *
 from sublime_plugin import *
 from datetime import datetime, timedelta
 
+DEBUG = False
+
 
 class RunSnippetCommand(TextCommand):
     __dict__ = ['lang_type', 'code_snippets']
@@ -65,17 +67,28 @@ class RunSnippetCommand(TextCommand):
         return status['255']
 
     def execute_bash(self, region: Region):
-        view = self.view
+        view: View = self.view
+        sn: str = self.selectorActive
 
-        code = view.substr(region) or view.substr(view.line(region))
+        # Multi-selection supported.
+        # code = view.substr(region) or view.substr(view.line(region))
+        regions: Selection = view.sel()
+        blocks: list[str] = []
+        for it in regions:
+            if view.scope_name(it.a).find(sn):
+                block = view.substr(self.expansion_region(sn, it))
+                blocks.append(block)
+
         # regex = re.compile('^#.*\n', re.RegexFlag.MULTILINE)
         # code = regex.sub('', code).replace(';;', ';')
+        code = "\n".join(blocks)
         tmp = tempfile.mktemp(".sh", "runsnippet-")
-        file = open(tmp, 'w')
-        file.writelines(code)
+        file = open(tmp,  'wb')
+        file.write(bytes(code, 'utf8'))
         file.close()
 
         cwd = pathlib.Path(view.file_name() or ".").parent
+
         os.chdir(cwd)
         print("bash@%s: [%s] %s\n" % (cwd, region, tmp), code[0:140], "...")
 
@@ -83,17 +96,31 @@ class RunSnippetCommand(TextCommand):
         (arg, shell) = ("-c", "C:/msys64/usr/bin/bash.exe")
         env = {"PATH": "C:/msys64/usr/bin/"}
 
-        # os.execlp('bash', '-c', code) # this method will cause Sublime plugin-host exit.
+        # Shebang supported for bash shell
+        tmp = tmp.replace("\\", "/")
+        pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, tmp])
+        time.sleep(.6)  # wait bash to read tmp file, delay to delete.
+
+        if DEBUG or code.find("DEBUG = True") > -1:
+
+            tempdir = tempfile.gettempdir()
+            dbgfile = pathlib.Path().joinpath(tempdir, "runsnippet.sh")
+            subl = pathlib.Path(sys.executable).parent.joinpath("subl.exe")
+
+            with open(dbgfile, 'wb') as file:
+                file.write(bytes(code, 'utf8'))
+
+            sublime.active_window().open_file(str(dbgfile))
+            # exitcode = os.system("'%s' '%s'>tmp;" % (subl, dbgfile))
+            # print("\"%s\" \"%s\" return %s" % (subl, dbgfile, exitcode))
+
+        os.remove(tmp)
+
+        # os.execlp('bash', '-c', code) # execlp will terminate plugin-host.
         # ecode = os.system("bash -c '%s ; sleep 3'" % code)
         # for cmd shell
         # pid = os.spawnle(os.P_NOWAIT, shell, "'%s %s'" %(arg, code), env)
         # pid = os.spawnve(os.P_NOWAIT, shell, ["'%s %s'" %(arg, code)], env)
-        # for bash shell
-        # Shebang supported
-        tmp = tmp.replace("\\", "/")
-        pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, tmp])
-        time.sleep(.6)  # wait bash to read tmp file, delay to delete.
-        os.remove(tmp)
         # print("bash shell return:", self.exit_status(pid))
         # pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, "'%s'" %(code)])
         # pid = os.spawnle(os.P_NOWAIT, shell, shell, arg, "'%s'" %(code), env)
@@ -139,11 +166,11 @@ class RunSnippetCommand(TextCommand):
 
         for region in regionset:
             scope = self.view.scope_name(region.a)
-            for it in self.selectors:
-                if scope.find(it) > -1:
-                    print("RunSnippet scope test:", it)
-                    self.selectorActive = it
-                    self.coderegion = self.expansion_region(self.selectorActive, region)
+            for sn in self.selectors:
+                if scope.find(sn) > -1:
+                    print("RunSnippet scope test:", sn)
+                    self.selectorActive = sn
+                    self.coderegion = self.expansion_region(sn, region)
                     if not execute:
                         return True
         self.selectorActive = None
