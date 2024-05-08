@@ -128,40 +128,61 @@ class JumpToCommand(TextCommand, ViewEventListener):
         rp = line[offset:] or ""
         lp = line[0:offset] or ""
 
+        r = rp.find(">")
+        t = lp.rfind("<")
+        if r >= 0 and t >= 0:
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindBlock, txt, pos, region.a+r)
+
         r = rp.find("`")
         t = lp.rfind("`")
         if r >= 0 and t >= 0:
-            return MatchArea(kindSymbol, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindSymbol, txt, pos, region.a+r)
 
         r = rp.find("|")
         t = lp.rfind("|")
         if r >= 0 and t >= 0:
-            return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindCtags,  txt, pos, region.a+r)
 
         r = rp.find("]")
         t = lp.rfind("[")
         if r >= 0 and t >= 0:
-            return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindCtags,  txt, pos, region.a+r)
 
         r = rp.find("'")
         t = lp.rfind("'")
         if r >= 0 and t >= 0:
-            return MatchArea(kindQuote, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindQuote,  txt, pos, region.a+r)
 
         r = rp.find('"')
         t = lp.rfind('"')
         if r >= 0 and t >= 0:
-            return MatchArea(kindQuote, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindQuote,  txt, pos, region.a+r)
 
         r = rp.find(")")
         t = lp.rfind("(")
         if r >= 0 and t >= 0:
-            return MatchArea(kindQuote, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindQuote,  txt, pos, region.a+r)
 
         r = rp.find("*")
         t = lp.rfind("*")
         if r >= 0 and t >= 0:
-            return MatchArea(kindCtags, line[t+1:r+offset], region.a-offset+t+1, region.a+r)
+            pos = region.a-offset+t+1
+            txt = line[t+1:r+offset]
+            return MatchArea(kindCtags,  txt, pos, region.a+r)
 
         t = lp.rfind(' ')
         r = rp.find(' ')
@@ -169,6 +190,7 @@ class JumpToCommand(TextCommand, ViewEventListener):
             t = 0
         if r == -1:
             r = len(rp)
+
         block = line[t:r+offset].strip()
         if block.startswith("http") or block.startswith("file://"):
             return MatchArea(kindBlock, block, region.a-offset+t+1, region.a+r)
