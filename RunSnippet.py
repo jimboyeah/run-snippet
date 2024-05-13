@@ -42,7 +42,7 @@ class RunSnippetCommand(TextCommand):
     def is_enabled(self, *args):
         ok = self.snippet_test()
         Logger.message("RunSnippet is_enabled(self, edit): %s" % ok)
-        return ok 
+        return ok
 
     def execute_cmd(self, region: Region):
         Logger.message("RunSnippet not yet support: %s" % self.selectorActive)
@@ -75,7 +75,7 @@ class RunSnippetCommand(TextCommand):
         regions: Selection = view.sel()
         blocks: list[str] = []
         for it in regions:
-            if view.scope_name(it.a).find(sn):
+            if view.scope_name(it.a).find(sn) >= 0:
                 block = view.substr(self.expansion_region(sn, it))
                 blocks.append(block)
 
@@ -100,8 +100,11 @@ class RunSnippetCommand(TextCommand):
         tmp = tmp.replace("\\", "/")
         pid = os.spawnv(os.P_NOWAIT, shell, [shell, arg, tmp])
         time.sleep(.6)  # wait bash to read tmp file, delay to delete.
+        os.remove(tmp)
 
-        if DEBUG or code.find("DEBUG = True") > -1:
+        is_memory_file = view.file_name() is None
+        is_debug_mode = DEBUG or code.find("DEBUG = True") >= 0
+        if is_debug_mode or is_memory_file:
 
             tempdir = tempfile.gettempdir()
             dbgfile = pathlib.Path().joinpath(tempdir, "runsnippet.sh")
@@ -110,11 +113,10 @@ class RunSnippetCommand(TextCommand):
             with open(dbgfile, 'wb') as file:
                 file.write(bytes(code, 'utf8'))
 
-            sublime.active_window().open_file(str(dbgfile))
-            # exitcode = os.system("'%s' '%s'>tmp;" % (subl, dbgfile))
-            # print("\"%s\" \"%s\" return %s" % (subl, dbgfile, exitcode))
-
-        os.remove(tmp)
+            if is_debug_mode:
+                sublime.active_window().open_file(str(dbgfile))
+                # exitcode = os.system("'%s' '%s'>tmp;" % (subl, dbgfile))
+                # print("\"%s\" \"%s\" return %s" % (subl, dbgfile, exitcode))
 
         # os.execlp('bash', '-c', code) # execlp will terminate plugin-host.
         # ecode = os.system("bash -c '%s ; sleep 3'" % code)
@@ -167,7 +169,7 @@ class RunSnippetCommand(TextCommand):
         for region in regionset:
             scope = self.view.scope_name(region.a)
             for sn in self.selectors:
-                if scope.find(sn) > -1:
+                if scope.find(sn) >= 0:
                     print("RunSnippet scope test:", sn)
                     self.selectorActive = sn
                     self.coderegion = self.expansion_region(sn, region)
@@ -181,13 +183,13 @@ class RunSnippetCommand(TextCommand):
 
         while region.a > 0:
             expansion = view.line(region.a-1)
-            if view.scope_name(expansion.a).find(scope) == -1:
+            if view.scope_name(expansion.a).find(scope) < 0:
                 break
             region.a = expansion.a
 
         while region.b < view.size():
             expansion = view.line(region.b+1)
-            if view.scope_name(expansion.b).find(scope) == -1:
+            if view.scope_name(expansion.b).find(scope) < 0:
                 break
             region.b = expansion.b
 
@@ -212,7 +214,7 @@ class Logger(sublime._LogWriter):
     def write(self, s):
         super().write(s)
         # if '\n' in s or '\r' in s:
-            # return # sapi.status_message("⚠ console output flush")
+        #    return # sapi.status_message("⚠ console output flush")
 
         window_id = sapi.active_window()
         unlisted = True
