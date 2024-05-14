@@ -15,7 +15,7 @@ class RunSnippetCommand(TextCommand):
     __dict__ = ['lang_type', 'code_snippets']
     coderegion = None
     selectorActive = None
-    selectors = { 
+    selectors = {
         "source.bash": "execute_bash",
         "source.shell.bash": "execute_bash",
         "markup.raw.block.markdown": "execute_bash",
@@ -35,7 +35,6 @@ class RunSnippetCommand(TextCommand):
             return
 
         method = getattr(self, self.selectors[self.selectorActive], None)
-        print("run snippet agent", self.selectorActive, self.coderegion, method)
         if method and isinstance(method, type(self.run)):
             method(self.coderegion)
 
@@ -102,6 +101,7 @@ class RunSnippetCommand(TextCommand):
         time.sleep(.6)  # wait bash to read tmp file, delay to delete.
         os.remove(tmp)
 
+        # sublime.active_window().extract_variables()
         is_memory_file = view.file_name() is None
         is_debug_mode = DEBUG or code.find("DEBUG = True") >= 0
         if is_debug_mode or is_memory_file:
@@ -170,7 +170,6 @@ class RunSnippetCommand(TextCommand):
             scope = self.view.scope_name(region.a)
             for sn in self.selectors:
                 if scope.find(sn) >= 0:
-                    print("RunSnippet scope test:", sn)
                     self.selectorActive = sn
                     self.coderegion = self.expansion_region(sn, region)
                     if not execute:
@@ -206,7 +205,7 @@ name = "exec"  # "TestPlugin_OutputPanel"
 class Logger(sublime._LogWriter):
 
     @classmethod
-    def message(cls, content:str):
+    def message(cls, content: str):
         msg = "⚡RS: %s" % content
         sublime.status_message(msg)
         pass
